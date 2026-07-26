@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { jsPDF } from "jspdf";
+import { read as readNbt } from "nbtify";
 
 type Block = {
   id: string;
@@ -17,6 +18,7 @@ type Blueprint = {
   width: number;
   depth: number;
   layers: Record<string, string>[];
+  customBlocks?: Block[];
 };
 
 type Selection = { start: number; end: number };
@@ -46,7 +48,7 @@ const BLOCKS: Block[] = [
 const EMPTY_BLUEPRINT: Blueprint = { name: "Untitled Blockprint", width: 30, depth: 30, layers: [{}] };
 
 export default function Home() {
-  const [blocks, setBlocks] = useState<Block[]>(BLOCKS);
+  const [baseBlocks, setBaseBlocks] = useState<Block[]>(BLOCKS);
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
@@ -72,6 +74,7 @@ export default function Home() {
   const lineStart = useRef<number | null>(null);
   const lineEnd = useRef<number | null>(null);
   const canvasViewport = useRef<HTMLDivElement | null>(null);
+  const blocks = useMemo(() => [...baseBlocks, ...(blueprint.customBlocks ?? [])], [baseBlocks, blueprint.customBlocks]);
 
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");
@@ -85,7 +88,7 @@ export default function Home() {
       .then(response => response.ok ? response.json() : Promise.reject())
       .then(data => {
         if (Array.isArray(data.blocks) && data.blocks.length) {
-          setBlocks(data.blocks);
+          setBaseBlocks(data.blocks);
           setSelected(data.blocks[0].id);
         }
       })
@@ -430,6 +433,8 @@ export default function Home() {
     setSelection(null);
     setClipboard(null);
     setLinePreview([]);
+    setSelected(baseBlocks[0]?.id ?? "oak");
+    setTool("paint");
     painting.current = false;
     selecting.current = false;
     lining.current = false;
@@ -610,15 +615,137 @@ export default function Home() {
     }
   }
 
-  function importFile(file?: File) {
-    if (!file) return;
-    file.text().then(text => {
-      try {
-        const next = JSON.parse(text) as Blueprint;
-        if (!next.width || !next.depth || !Array.isArray(next.layers)) return;
-        checkpoint(); setBlueprint(next); setLayer(0); setSelection(null);
-      } catch {}
+  function textureForStructureBlock(localName: string) {
+    const aliases: Record<string, string[]> = {
+      air: [],
+      cave_air: [],
+      structure_void: [],
+      water: ["still_water", "flowing_water"],
+      lava: ["still_lava", "flowing_lava"],
+      oak_planks: ["planks"],
+      oak_log: ["oak_log_side", "log_oak"],
+      oak_wood: ["oak_log_side", "log_oak"],
+    };
+    const candidates = [localName, ...(aliases[localName] ?? [])];
+    for (const candidate of candidates) {
+      const exact = baseBlocks.find(block => block.id === `bedrock:${candidate}`);
+      if (exact) return exact;
+    }
+    const tokens = localName.split("_").filter(token => !["block", "wall", "standing"].includes(token));
+    let best: Block | undefined;
+    let bestScore = 0;
+    for (const block of baseBlocks) {
+      const textureName = block.id.replace(/^bedrock:/, "");
+      let score = tokens.reduce((total, token) => total + (textureName.includes(token) ? token.length : 0), 0);
+      if (textureName.startsWith(localName) || localName.startsWith(textureName)) score += 8;
+      if (score > bestScore) {
+        best = block;
+        bestScore = score;
+      }
+    }
+    return bestScore >= Math.max(4, Math.floor(localName.length / 3)) ? best : undefined;
+  }
+
+  function fallbackBlockColor(name: string) {
+    let hash = 0;
+    for (const character of name) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+    const hue = hash % 360;
+    return `hsl(${hue} 22% 48%)`;
+  }
+
+  async function importMcstructure(file: File) {
+    const parsed = await readNbt(await file.arrayBuffer(), { endian:"little", compression:null });
+    const root = parsed.data as unknown as Record<string, unknown>;
+    const size = root.size as unknown[];
+    const structure = root.structure as Record<string, unknown>;
+    const palettes = structure?.palette as Record<string, unknown>;
+    const defaultPalette = palettes?.default as Record<string, unknown>;
+    const palette = defaultPalette?.block_palette as Record<string, unknown>[];
+    const blockIndices = structure?.block_indices as unknown[][];
+    if (!Array.isArray(size) || size.length !== 3 || !Array.isArray(palette) || !Array.isArray(blockIndices) || blockIndices.length < 1) {
+      throw new Error("This file does not contain a supported Bedrock structure.");
+    }
+
+    const sizeX = Number(size[0]);
+    const sizeY = Number(size[1]);
+    const sizeZ = Number(size[2]);
+    if (![sizeX, sizeY, sizeZ].every(value => Number.isInteger(value) && value > 0)) throw new Error("The structure dimensions are invalid.");
+    const width = Math.min(128, sizeX);
+    const depth = Math.min(128, sizeZ);
+    const customBlocks = new Map<string, Block>();
+    const paletteIds = palette.map(entry => {
+      const fullName = String(entry.name ?? "");
+      const localName = fullName.replace(/^minecraft:/, "");
+      if (["air", "cave_air", "void_air", "structure_void"].includes(localName)) return null;
+      const id = `mcstructure:${localName}`;
+      if (!customBlocks.has(id)) {
+        const texture = textureForStructureBlock(localName);
+        customBlocks.set(id, {
+          id,
+          name: localName.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+          category: "Imported",
+          color: texture?.color ?? fallbackBlockColor(localName),
+          texture: texture?.texture,
+          textureUrl: texture?.textureUrl,
+        });
+      }
+      return id;
     });
+
+    const primary = Array.from(blockIndices[0] ?? [], value => Number(value));
+    const secondary = Array.from(blockIndices[1] ?? [], value => Number(value));
+    const expected = sizeX * sizeY * sizeZ;
+    if (primary.length < expected) throw new Error("The structure block data is incomplete.");
+    const layers: Record<string, string>[] = Array.from({ length:sizeY }, () => ({}));
+    for (let index = 0; index < expected; index++) {
+      const x = Math.floor(index / (sizeZ * sizeY));
+      const y = Math.floor(index / sizeZ) % sizeY;
+      const z = index % sizeZ;
+      if (x >= width || z >= depth) continue;
+      const primaryId = primary[index] >= 0 ? paletteIds[primary[index]] : null;
+      const secondaryId = secondary[index] >= 0 ? paletteIds[secondary[index]] : null;
+      const blockId = primaryId ?? secondaryId;
+      if (blockId) layers[y][z * width + x] = blockId;
+    }
+
+    checkpoint();
+    const filename = file.name.replace(/\.mcstructure$/i, "");
+    setBlueprint({
+      name: filename || "Imported Structure",
+      width,
+      depth,
+      layers,
+      customBlocks:[...customBlocks.values()],
+    });
+    setLayer(0);
+    setSelection(null);
+    setClipboard(null);
+    const firstImportedBlock = customBlocks.values().next().value as Block | undefined;
+    if (firstImportedBlock) {
+      setSelected(firstImportedBlock.id);
+      setTool("paint");
+    }
+    const cropped = sizeX > 128 || sizeZ > 128;
+    window.alert(`Imported ${sizeX} × ${sizeY} × ${sizeZ} structure as ${sizeY} layers.${cropped ? " X/Z dimensions were cropped to Blockprint's 128-block limit." : ""}`);
+  }
+
+  async function importFile(file?: File) {
+    if (!file) return;
+    if (file.name.toLowerCase().endsWith(".mcstructure")) {
+      try {
+        await importMcstructure(file);
+      } catch (error) {
+        window.alert(error instanceof Error ? `Could not import structure: ${error.message}` : "Could not import this structure.");
+      }
+      return;
+    }
+    try {
+      const next = JSON.parse(await file.text()) as Blueprint;
+      if (!next.width || !next.depth || !Array.isArray(next.layers)) throw new Error("Invalid Blockprint project.");
+      checkpoint(); setBlueprint(next); setLayer(0); setSelection(null);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not import this project.");
+    }
   }
 
   return (
@@ -636,7 +763,7 @@ export default function Home() {
           onChange={e => setBlueprint({ ...blueprint, name: e.target.value })} />
         <div className="header-actions">
           <button className="button secondary" onClick={newProject}>New project</button>
-          <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
+          <label className="button secondary" title="Import a Blockprint project or Bedrock structure">Import<input type="file" accept=".json,.mcstructure,application/json" hidden onChange={e => { importFile(e.target.files?.[0]); e.currentTarget.value = ""; }}/></label>
           <button className="button primary" onClick={saveProject}>Save project</button>
           <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
           <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
