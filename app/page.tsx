@@ -42,7 +42,7 @@ const BLOCKS: Block[] = [
   { id: "water", name: "Water", category: "Terrain", color: "#3d72cc", texture: "repeating-linear-gradient(0deg,transparent 0 4px,#77a4ef 4px 5px)" },
 ];
 
-const EMPTY_BLUEPRINT: Blueprint = { name: "Sears No. 144", width: 30, depth: 30, layers: [{}] };
+const EMPTY_BLUEPRINT: Blueprint = { name: "Untitled Blockprint", width: 30, depth: 30, layers: [{}] };
 
 export default function Home() {
   const [blocks, setBlocks] = useState<Block[]>(BLOCKS);
