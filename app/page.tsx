@@ -57,7 +57,7 @@ export default function Home() {
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
   const [selectedRotation, setSelectedRotation] = useState(0);
-  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "picker">("paint");
+  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "picker" | "grab">("paint");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
@@ -65,6 +65,7 @@ export default function Home() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const [history, setHistory] = useState<Blueprint[]>([]);
+  const [future, setFuture] = useState<Blueprint[]>([]);
   const [linePreview, setLinePreview] = useState<number[]>([]);
   const [canvasWidth, setCanvasWidth] = useState("30");
   const [canvasDepth, setCanvasDepth] = useState("30");
@@ -79,6 +80,8 @@ export default function Home() {
   const lineStart = useRef<number | null>(null);
   const lineEnd = useRef<number | null>(null);
   const canvasViewport = useRef<HTMLDivElement | null>(null);
+  const panning = useRef({ active:false, pointerId:-1, startX:0, startY:0, scrollLeft:0, scrollTop:0 });
+  const [isPanning, setIsPanning] = useState(false);
   const blocks = useMemo(() => [...baseBlocks, ...(blueprint.customBlocks ?? [])], [baseBlocks, blueprint.customBlocks]);
 
   useEffect(() => {
@@ -120,9 +123,15 @@ export default function Home() {
       const active = document.activeElement;
       if (active instanceof HTMLInputElement || active instanceof HTMLSelectElement || active instanceof HTMLTextAreaElement) return;
       const command = event.ctrlKey || event.metaKey;
-      if (command && event.key.toLowerCase() === "z") {
+      if (command && event.key.toLowerCase() === "z" && event.shiftKey) {
+        event.preventDefault();
+        redo();
+      } else if (command && event.key.toLowerCase() === "z") {
         event.preventDefault();
         undo();
+      } else if (command && event.key.toLowerCase() === "y") {
+        event.preventDefault();
+        redo();
       } else if (command && (event.key === "+" || event.key === "=")) {
         event.preventDefault();
         setZoom(value => Math.min(40, value + 2));
@@ -174,15 +183,27 @@ export default function Home() {
 
   function checkpoint() {
     setHistory(previous => [...previous.slice(-49), structuredClone(blueprint)]);
+    setFuture([]);
   }
 
   function undo() {
     if (!history.length) return;
     const previous = history[history.length - 1];
     setHistory(items => items.slice(0, -1));
+    setFuture(items => [...items.slice(-49), structuredClone(blueprint)]);
     setBlueprint(previous);
     setSelection(null);
     setLayer(currentLayer => Math.min(currentLayer, previous.layers.length - 1));
+  }
+
+  function redo() {
+    if (!future.length) return;
+    const next = future[future.length - 1];
+    setFuture(items => items.slice(0, -1));
+    setHistory(items => [...items.slice(-49), structuredClone(blueprint)]);
+    setBlueprint(next);
+    setSelection(null);
+    setLayer(currentLayer => Math.min(currentLayer, next.layers.length - 1));
   }
 
   function selectionBounds(value = selection) {
@@ -1055,9 +1076,11 @@ export default function Home() {
                 <button className={tool === "picker" ? "active" : ""} onClick={() => setTool("picker")} title="Pick a block (Alt+click)">Picker</button>
                 <button onClick={rotateSelected} title="Rotate selected texture 90° (R)">Rotate {selectedRotation}°</button>
                 <button className={tool === "select" ? "active" : ""} onClick={() => setTool("select")}>Select</button>
+                <button className={tool === "grab" ? "active" : ""} onClick={() => setTool("grab")} title="Drag the canvas to scroll">Grab</button>
               </div>
               <div className="edit-group" aria-label="Edit selection">
                 <button disabled={!history.length} onClick={undo} title="Undo (Ctrl+Z)">Undo</button>
+                <button disabled={!future.length} onClick={redo} title="Redo (Ctrl+Y or Ctrl+Shift+Z)">Redo</button>
                 <button disabled={!selection} onClick={copySelection} title="Copy (Ctrl+C)">Copy</button>
                 <button disabled={!selection} onClick={cutSelection} title="Cut (Ctrl+X)">Cut</button>
                 <button disabled={!clipboard} onClick={pasteSelection} title="Paste at selection (Ctrl+V)">Paste</button>
@@ -1088,7 +1111,37 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="canvas-scroll" ref={canvasViewport}>
+          <div className={`canvas-scroll ${tool === "grab" ? "grab-mode" : ""} ${isPanning ? "is-panning" : ""}`} ref={canvasViewport}
+            onPointerDown={event => {
+              if (tool !== "grab") return;
+              event.preventDefault();
+              panning.current = {
+                active:true,
+                pointerId:event.pointerId,
+                startX:event.clientX,
+                startY:event.clientY,
+                scrollLeft:event.currentTarget.scrollLeft,
+                scrollTop:event.currentTarget.scrollTop
+              };
+              event.currentTarget.setPointerCapture(event.pointerId);
+              setIsPanning(true);
+            }}
+            onPointerMove={event => {
+              const pan = panning.current;
+              if (!pan.active || pan.pointerId !== event.pointerId) return;
+              event.currentTarget.scrollLeft = pan.scrollLeft - (event.clientX - pan.startX);
+              event.currentTarget.scrollTop = pan.scrollTop - (event.clientY - pan.startY);
+            }}
+            onPointerUp={event => {
+              if (panning.current.pointerId !== event.pointerId) return;
+              panning.current.active = false;
+              setIsPanning(false);
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+            }}
+            onPointerCancel={() => {
+              panning.current.active = false;
+              setIsPanning(false);
+            }}>
             <div className={`blueprint-grid ${showGrid ? "" : "grid-off"}`}
               style={{ "--cell":`${zoom}px`, gridTemplateColumns:`repeat(${blueprint.width}, var(--cell))`, gridTemplateRows:`repeat(${blueprint.depth}, var(--cell))` } as CSSProperties}
               onPointerLeave={() => {
@@ -1120,8 +1173,10 @@ export default function Home() {
                   ? currentRotations[index] ?? 0
                   : lowerLayerIndex >= 0 ? blueprint.rotations?.[lowerLayerIndex]?.[index] ?? 0 : 0;
                 return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentBlock ? `, ${currentBlock.name}` : lowerBlock ? `, ${lowerBlock.name} from lower layer` : ", empty"}`}
+                  title={currentBlock?.name ?? (lowerBlock ? `${lowerBlock.name} (lower layer)` : undefined)}
                   className={`cell ${currentBlock ? "filled" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
                   onPointerDown={e => {
+                    if (tool === "grab") return;
                     e.preventDefault();
                     if (e.altKey || tool === "picker") {
                       pickBlock(index);

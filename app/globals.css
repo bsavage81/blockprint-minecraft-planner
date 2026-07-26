@@ -95,6 +95,8 @@ h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .zoom-controls span { min-width:37px; color:var(--muted); text-align:center; font-size:9px; font-variant-numeric:tabular-nums; }
 .zoom-controls .fit-button { font-size:10px; }
 .canvas-scroll { flex:1; min-height:500px; display:grid; place-items:start; overflow:auto; padding:28px; background-image:radial-gradient(#c3c2ba 1px,transparent 1px); background-size:12px 12px; }
+.canvas-scroll.grab-mode,.canvas-scroll.grab-mode .cell { cursor:grab; }
+.canvas-scroll.grab-mode.is-panning,.canvas-scroll.grab-mode.is-panning .cell { cursor:grabbing; user-select:none; }
 .blueprint-grid { display:grid; width:max-content; background:white; border:3px solid #4d524c; box-shadow:0 14px 35px rgba(44,47,41,.16); touch-action:none; }
 .cell { position:relative; width:var(--cell); height:var(--cell); overflow:hidden; border:0; border-right:1px solid #d7d9d2; border-bottom:1px solid #d7d9d2; padding:0; background:#fff; image-rendering:pixelated; }
 .cell-surface { position:absolute; inset:0; z-index:0; display:block; background-position:center; background-repeat:no-repeat; pointer-events:none; image-rendering:pixelated; transform-origin:center; }
