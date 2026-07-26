@@ -64,6 +64,8 @@ export default function Home() {
   const [exporting, setExporting] = useState<"pdf" | "png" | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<string[]>([]);
   const [zoom, setZoom] = useState(22);
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  const [detailsCollapsed, setDetailsCollapsed] = useState(false);
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -628,17 +630,12 @@ export default function Home() {
         </div>
         <input className="project-name" aria-label="Blueprint name" value={blueprint.name}
           onChange={e => setBlueprint({ ...blueprint, name: e.target.value })} />
-        <div className="header-actions">
-          <button className="button secondary" onClick={newProject}>New project</button>
-          <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
-          <button className="button primary" onClick={saveProject}>Save project</button>
-          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
-          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
-        </div>
+        <div className="topbar-spacer" aria-hidden="true" />
       </header>
 
-      <section className="workspace">
-        <aside className="palette-panel">
+      <section className={`workspace ${paletteCollapsed ? "left-collapsed" : ""} ${detailsCollapsed ? "right-collapsed" : ""}`}>
+        <aside className={`palette-panel ${paletteCollapsed ? "collapsed" : ""}`}>
+          <button className="sidebar-toggle palette-toggle" onClick={() => setPaletteCollapsed(value => !value)} aria-label={paletteCollapsed ? "Expand block palette" : "Minimize block palette"} title={paletteCollapsed ? "Expand block palette" : "Minimize block palette"}>{paletteCollapsed ? "›" : "‹"}</button>
           <div className="panel-heading"><div><span className="eyebrow">Bedrock samples</span><h2>Block palette</h2></div><span className="count">{blocks.length}</span></div>
           <input className="search" placeholder="Search blocks…" value={search} onChange={e => setSearch(e.target.value)} />
           <div className="category-tabs">
@@ -789,7 +786,18 @@ export default function Home() {
           </div>
         </section>
 
-        <aside className="details-panel">
+        <aside className={`details-panel ${detailsCollapsed ? "collapsed" : ""}`}>
+          <button className="sidebar-toggle details-toggle" onClick={() => setDetailsCollapsed(value => !value)} aria-label={detailsCollapsed ? "Expand project sidebar" : "Minimize project sidebar"} title={detailsCollapsed ? "Expand project sidebar" : "Minimize project sidebar"}>{detailsCollapsed ? "‹" : "›"}</button>
+          <section className="project-files">
+            <span className="eyebrow">Project</span><h2>Files & exports</h2>
+            <div className="project-actions">
+              <button className="button secondary" onClick={newProject}>New project</button>
+              <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
+              <button className="button primary" onClick={saveProject}>Save project</button>
+              <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
+              <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
+            </div>
+          </section>
           <section>
             <span className="eyebrow">Blueprint</span><h2>Build setup</h2>
             <form className="field" onSubmit={event => { event.preventDefault(); applyCanvasSize(); }}>
