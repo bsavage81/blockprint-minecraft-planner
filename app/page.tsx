@@ -18,6 +18,9 @@ type Blueprint = {
   layers: Record<string, string>[];
 };
 
+type Selection = { start: number; end: number };
+type Clipboard = { width: number; height: number; cells: Record<string, string> };
+
 const BLOCKS: Block[] = [
   { id: "oak", name: "Oak Planks", category: "Wood", color: "#b88952", texture: "linear-gradient(0deg,#8a613c 1px,transparent 1px)" },
   { id: "spruce", name: "Spruce Planks", category: "Wood", color: "#6f4c2d", texture: "linear-gradient(0deg,#4e341f 1px,transparent 1px)" },
@@ -47,11 +50,15 @@ export default function Home() {
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
-  const [tool, setTool] = useState<"paint" | "erase">("paint");
+  const [tool, setTool] = useState<"paint" | "erase" | "select">("paint");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [clipboard, setClipboard] = useState<Clipboard | null>(null);
+  const [history, setHistory] = useState<Blueprint[]>([]);
   const painting = useRef(false);
+  const selecting = useRef(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");
@@ -76,6 +83,31 @@ export default function Home() {
     localStorage.setItem("blockprint-blueprint", JSON.stringify(blueprint));
   }, [blueprint]);
 
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLSelectElement || active instanceof HTMLTextAreaElement) return;
+      const command = event.ctrlKey || event.metaKey;
+      if (command && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        undo();
+      } else if (command && event.key.toLowerCase() === "c" && selection) {
+        event.preventDefault();
+        copySelection();
+      } else if (command && event.key.toLowerCase() === "x" && selection) {
+        event.preventDefault();
+        cutSelection();
+      } else if (command && event.key.toLowerCase() === "v" && clipboard) {
+        event.preventDefault();
+        pasteSelection();
+      } else if (event.key === "Escape") {
+        setSelection(null);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
+
   const categories = ["All", ...Array.from(new Set(blocks.map(b => b.category)))];
   const visibleBlocks = blocks.filter(b =>
     (category === "All" || b.category === category) &&
@@ -88,6 +120,101 @@ export default function Home() {
     return [...counts.entries()].sort((a,b) => b[1] - a[1]);
   }, [blueprint]);
 
+  function checkpoint() {
+    setHistory(previous => [...previous.slice(-49), structuredClone(blueprint)]);
+  }
+
+  function undo() {
+    if (!history.length) return;
+    const previous = history[history.length - 1];
+    setHistory(items => items.slice(0, -1));
+    setBlueprint(previous);
+    setSelection(null);
+    setLayer(currentLayer => Math.min(currentLayer, previous.layers.length - 1));
+  }
+
+  function selectionBounds(value = selection) {
+    if (!value) return null;
+    const startX = value.start % blueprint.width;
+    const startY = Math.floor(value.start / blueprint.width);
+    const endX = value.end % blueprint.width;
+    const endY = Math.floor(value.end / blueprint.width);
+    return {
+      left: Math.min(startX, endX),
+      right: Math.max(startX, endX),
+      top: Math.min(startY, endY),
+      bottom: Math.max(startY, endY),
+    };
+  }
+
+  function selectionClass(index: number) {
+    const bounds = selectionBounds();
+    if (!bounds) return "";
+    const x = index % blueprint.width;
+    const y = Math.floor(index / blueprint.width);
+    if (x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) return "";
+    return [
+      "selection-cell",
+      y === bounds.top ? "selection-top" : "",
+      y === bounds.bottom ? "selection-bottom" : "",
+      x === bounds.left ? "selection-left" : "",
+      x === bounds.right ? "selection-right" : "",
+    ].filter(Boolean).join(" ");
+  }
+
+  function copySelection() {
+    const bounds = selectionBounds();
+    if (!bounds) return null;
+    const cells: Record<string, string> = {};
+    for (let y = bounds.top; y <= bounds.bottom; y++) {
+      for (let x = bounds.left; x <= bounds.right; x++) {
+        const block = current[y * blueprint.width + x];
+        if (block) cells[(y - bounds.top) * (bounds.right - bounds.left + 1) + (x - bounds.left)] = block;
+      }
+    }
+    const next = {
+      width: bounds.right - bounds.left + 1,
+      height: bounds.bottom - bounds.top + 1,
+      cells,
+    };
+    setClipboard(next);
+    return next;
+  }
+
+  function cutSelection() {
+    const bounds = selectionBounds();
+    if (!bounds || !copySelection()) return;
+    checkpoint();
+    setBlueprint(previous => {
+      const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      for (let y = bounds.top; y <= bounds.bottom; y++) {
+        for (let x = bounds.left; x <= bounds.right; x++) delete layers[layer][y * previous.width + x];
+      }
+      return { ...previous, layers };
+    });
+  }
+
+  function pasteSelection() {
+    if (!clipboard) return;
+    const bounds = selectionBounds();
+    const anchorX = bounds?.left ?? 0;
+    const anchorY = bounds?.top ?? 0;
+    checkpoint();
+    setBlueprint(previous => {
+      const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      for (const [offset, block] of Object.entries(clipboard.cells)) {
+        const value = Number(offset);
+        const x = anchorX + value % clipboard.width;
+        const y = anchorY + Math.floor(value / clipboard.width);
+        if (x < previous.width && y < previous.depth) layers[layer][y * previous.width + x] = block;
+      }
+      return { ...previous, layers };
+    });
+    const endX = Math.min(blueprint.width - 1, anchorX + clipboard.width - 1);
+    const endY = Math.min(blueprint.depth - 1, anchorY + clipboard.height - 1);
+    setSelection({ start: anchorY * blueprint.width + anchorX, end: endY * blueprint.width + endX });
+  }
+
   function paintCell(index: number) {
     setBlueprint(prev => {
       const layers = prev.layers.map((l, i) => i === layer ? { ...l } : l);
@@ -98,11 +225,14 @@ export default function Home() {
   }
 
   function changeSize(width: number, depth: number) {
+    checkpoint();
     setBlueprint(prev => ({ ...prev, width, depth, layers: prev.layers.map(() => ({})) }));
     setLayer(0);
+    setSelection(null);
   }
 
   function addLayer(copy = false) {
+    checkpoint();
     setBlueprint(prev => {
       const layers = [...prev.layers];
       layers.splice(layer + 1, 0, copy ? { ...layers[layer] } : {});
@@ -113,6 +243,7 @@ export default function Home() {
 
   function deleteLayer() {
     if (blueprint.layers.length === 1) return;
+    checkpoint();
     setBlueprint(prev => ({ ...prev, layers: prev.layers.filter((_, i) => i !== layer) }));
     setLayer(Math.max(0, layer - 1));
   }
@@ -132,7 +263,7 @@ export default function Home() {
       try {
         const next = JSON.parse(text) as Blueprint;
         if (!next.width || !next.depth || !Array.isArray(next.layers)) return;
-        setBlueprint(next); setLayer(0);
+        checkpoint(); setBlueprint(next); setLayer(0); setSelection(null);
       } catch {}
     });
   }
@@ -176,9 +307,18 @@ export default function Home() {
 
         <section className="canvas-panel">
           <div className="canvas-toolbar">
-            <div className="tool-group">
-              <button className={tool === "paint" ? "active" : ""} onClick={() => setTool("paint")}>Paint</button>
-              <button className={tool === "erase" ? "active" : ""} onClick={() => setTool("erase")}>Erase</button>
+            <div className="toolbar-left">
+              <div className="tool-group">
+                <button className={tool === "paint" ? "active" : ""} onClick={() => setTool("paint")}>Paint</button>
+                <button className={tool === "erase" ? "active" : ""} onClick={() => setTool("erase")}>Erase</button>
+                <button className={tool === "select" ? "active" : ""} onClick={() => setTool("select")}>Select</button>
+              </div>
+              <div className="edit-group" aria-label="Edit selection">
+                <button disabled={!history.length} onClick={undo} title="Undo (Ctrl+Z)">Undo</button>
+                <button disabled={!selection} onClick={copySelection} title="Copy (Ctrl+C)">Copy</button>
+                <button disabled={!selection} onClick={cutSelection} title="Cut (Ctrl+X)">Cut</button>
+                <button disabled={!clipboard} onClick={pasteSelection} title="Paste at selection (Ctrl+V)">Paste</button>
+              </div>
             </div>
             <div className="layer-nav">
               <button disabled={layer === 0} onClick={() => setLayer(layer - 1)}>←</button>
@@ -191,24 +331,39 @@ export default function Home() {
             <div className={`blueprint-grid ${showGrid ? "" : "grid-off"}`}
               style={{ gridTemplateColumns:`repeat(${blueprint.width}, var(--cell))`, gridTemplateRows:`repeat(${blueprint.depth}, var(--cell))` }}
               onPointerLeave={() => { painting.current = false; }}
-              onPointerUp={() => { painting.current = false; }}>
+              onPointerUp={() => { painting.current = false; selecting.current = false; }}>
               {Array.from({ length: blueprint.width * blueprint.depth }, (_, index) => {
                 const block = blocks.find(b => b.id === current[index]);
                 return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${block ? `, ${block.name}` : ", empty"}`}
-                  className={`cell ${block ? "filled" : ""}`}
+                  className={`cell ${block ? "filled" : ""} ${selectionClass(index)}`}
                   style={block ? {
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
                     backgroundSize:block.textureUrl ? "cover" : undefined
                   } : undefined}
-                  onPointerDown={e => { e.preventDefault(); painting.current = true; paintCell(index); }}
-                  onPointerEnter={() => { if (painting.current) paintCell(index); }} />;
+                  onPointerDown={e => {
+                    e.preventDefault();
+                    if (tool === "select") {
+                      selecting.current = true;
+                      setSelection({ start:index, end:index });
+                    } else {
+                      checkpoint();
+                      painting.current = true;
+                      paintCell(index);
+                    }
+                  }}
+                  onPointerEnter={() => {
+                    if (tool === "select" && selecting.current) {
+                      setSelection(previous => ({ start: previous?.start ?? index, end:index }));
+                    } else if (painting.current) paintCell(index);
+                  }} />;
               })}
             </div>
           </div>
           <div className="canvas-footer">
             <span>{blueprint.width} × {blueprint.depth} blocks</span>
             <span>{Object.keys(current).length} blocks on this layer</span>
+            <span>{selection ? "Selection active" : "No selection"}</span>
             <span>Auto-saved on this device</span>
           </div>
         </section>
@@ -241,8 +396,8 @@ export default function Home() {
               })}</ol>}
           </section>
           <section className="quick-tips">
-            <span className="eyebrow">Spreadsheet familiar</span>
-            <p>Each cell is one block. Add layers as you build upward, then export the complete plan as a portable file.</p>
+            <span className="eyebrow">Selection shortcuts</span>
+            <p>Drag with Select, then use Ctrl/Cmd+C, X, or V. Undo with Ctrl/Cmd+Z and clear the selection with Escape.</p>
           </section>
         </aside>
       </section>
