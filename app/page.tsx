@@ -711,6 +711,13 @@ export default function Home() {
   function rotatedMinecraftStates(blockId: string, rotation: number) {
     const block = blocks.find(item => item.id === blockId);
     const states = { ...(block?.minecraftStates ?? {}) };
+    const textureName = blockId.replace(/^[^:]+:/, "");
+    const minecraftLocalName = minecraftNameForBlock(blockId).replace(/^minecraft:/, "");
+    const isDirectionalPillar = /(?:_log|_wood|_hyphae|(?:crimson|warped)_stem)$/.test(minecraftLocalName);
+    if (!("pillar_axis" in states) && !("axis" in states) && isDirectionalPillar) {
+      if (textureName.endsWith("_side")) states.pillar_axis = "z";
+      if (textureName.endsWith("_top")) states.pillar_axis = "y";
+    }
     const sourceRotation = block?.sourceRotation ?? 0;
     const steps = ((rotation - sourceRotation + 360) % 360) / 90;
     const cardinals = ["north", "east", "south", "west"];
