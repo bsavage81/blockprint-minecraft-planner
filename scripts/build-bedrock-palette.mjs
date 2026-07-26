@@ -55,7 +55,7 @@ for (const [id, definition] of Object.entries(atlas.texture_data)) {
   const filename = `${id.replace(/[^a-z0-9_-]/gi, "-")}.png`;
   fs.copyFileSync(source, path.join(outDir, filename));
   seenPaths.add(source);
-  entries.push({ id: `bedrock:${id}`, name: title(id), category: category(id), textureUrl: `/bedrock/${filename}` });
+  entries.push({ id: `bedrock:${id}`, name: title(id), category: category(id), textureUrl: `./bedrock/${filename}` });
 }
 entries.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
 fs.writeFileSync(outManifest, JSON.stringify({ source: "Mojang/bedrock-samples", blocks: entries }, null, 2));

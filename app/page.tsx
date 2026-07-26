@@ -61,7 +61,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetch("/bedrock-blocks.json")
+    fetch("./bedrock-blocks.json")
       .then(response => response.ok ? response.json() : Promise.reject())
       .then(data => {
         if (Array.isArray(data.blocks) && data.blocks.length) {
