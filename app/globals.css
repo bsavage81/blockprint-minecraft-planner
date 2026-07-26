@@ -33,7 +33,7 @@ button:disabled { cursor:not-allowed; opacity:.35; }
 .eyebrow { display:block; margin-bottom:3px; color:var(--green); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.13em; }
 h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .count { min-width:29px; height:25px; display:grid; place-items:center; padding:0 7px; background:#e5eadf; border-radius:20px; color:var(--green-2); font-size:11px; font-weight:800; }
-.search,.field select { width:100%; border:1px solid var(--line); border-radius:4px; background:white; padding:9px 10px; color:var(--ink); }
+.search,.field select,.field input { width:100%; border:1px solid var(--line); border-radius:4px; background:white; padding:9px 10px; color:var(--ink); }
 .search { margin:16px 0 10px; }
 .category-tabs { display:flex; gap:5px; overflow-x:auto; padding-bottom:9px; scrollbar-width:none; }
 .category-tabs button,.tool-group button,.edit-group button,.layer-actions button { border:1px solid var(--line); background:transparent; border-radius:4px; padding:6px 9px; white-space:nowrap; font-size:11px; font-weight:700; color:var(--muted); }
@@ -79,6 +79,12 @@ h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .details-panel { display:flex; flex-direction:column; gap:24px; }
 .details-panel section { padding-bottom:22px; border-bottom:1px solid var(--line); }
 .field { display:grid; gap:6px; margin-top:15px; color:var(--muted); font-size:11px; font-weight:700; }
+.field small { font-size:9px; font-weight:500; line-height:1.4; }
+.size-controls { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:end; gap:7px; }
+.size-controls label { display:grid; gap:4px; }
+.size-controls input { font-variant-numeric:tabular-nums; }
+.size-controls button { grid-column:1/-1; border:1px solid var(--green); border-radius:4px; padding:8px; background:var(--green); color:white; font-size:11px; font-weight:800; }
+.size-times { padding-bottom:10px; font-size:14px; }
 .layer-actions { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; }
 .layer-actions button { padding:8px 7px; }
 .layer-actions .danger { grid-column:1/-1; color:#9b3d32; }

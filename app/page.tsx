@@ -42,7 +42,6 @@ const BLOCKS: Block[] = [
   { id: "water", name: "Water", category: "Terrain", color: "#3d72cc", texture: "repeating-linear-gradient(0deg,transparent 0 4px,#77a4ef 4px 5px)" },
 ];
 
-const SIZE_PRESETS = [[16,16], [24,24], [30,30], [32,32]];
 const EMPTY_BLUEPRINT: Blueprint = { name: "Sears No. 144", width: 30, depth: 30, layers: [{}] };
 
 export default function Home() {
@@ -58,6 +57,8 @@ export default function Home() {
   const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const [history, setHistory] = useState<Blueprint[]>([]);
   const [linePreview, setLinePreview] = useState<number[]>([]);
+  const [canvasWidth, setCanvasWidth] = useState("30");
+  const [canvasDepth, setCanvasDepth] = useState("30");
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -86,6 +87,11 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("blockprint-blueprint", JSON.stringify(blueprint));
   }, [blueprint]);
+
+  useEffect(() => {
+    setCanvasWidth(String(blueprint.width));
+    setCanvasDepth(String(blueprint.depth));
+  }, [blueprint.width, blueprint.depth]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -304,10 +310,37 @@ export default function Home() {
   }
 
   function changeSize(width: number, depth: number) {
+    width = Math.min(128, Math.max(1, Math.round(width)));
+    depth = Math.min(128, Math.max(1, Math.round(depth)));
+    if (width === blueprint.width && depth === blueprint.depth) return;
     checkpoint();
-    setBlueprint(prev => ({ ...prev, width, depth, layers: prev.layers.map(() => ({})) }));
-    setLayer(0);
+    setBlueprint(prev => ({
+      ...prev,
+      width,
+      depth,
+      layers: prev.layers.map(previousLayer => {
+        const resized: Record<string, string> = {};
+        for (const [key, block] of Object.entries(previousLayer)) {
+          const oldIndex = Number(key);
+          const x = oldIndex % prev.width;
+          const y = Math.floor(oldIndex / prev.width);
+          if (x < width && y < depth) resized[y * width + x] = block;
+        }
+        return resized;
+      }),
+    }));
     setSelection(null);
+  }
+
+  function applyCanvasSize() {
+    const width = Number(canvasWidth);
+    const depth = Number(canvasDepth);
+    if (!Number.isFinite(width) || !Number.isFinite(depth)) {
+      setCanvasWidth(String(blueprint.width));
+      setCanvasDepth(String(blueprint.depth));
+      return;
+    }
+    changeSize(width, depth);
   }
 
   function addLayer(copy = false) {
@@ -476,11 +509,16 @@ export default function Home() {
         <aside className="details-panel">
           <section>
             <span className="eyebrow">Blueprint</span><h2>Build setup</h2>
-            <label className="field">Canvas size
-              <select value={`${blueprint.width}x${blueprint.depth}`} onChange={e => {
-                const [w,d] = e.target.value.split("x").map(Number); changeSize(w,d);
-              }}>{SIZE_PRESETS.map(([w,d]) => <option key={w} value={`${w}x${d}`}>{w} × {d}</option>)}</select>
-            </label>
+            <form className="field" onSubmit={event => { event.preventDefault(); applyCanvasSize(); }}>
+              <span>Canvas size</span>
+              <div className="size-controls">
+                <label><span>X width</span><input type="number" min="1" max="128" step="1" value={canvasWidth} onChange={event => setCanvasWidth(event.target.value)} /></label>
+                <span className="size-times">×</span>
+                <label><span>Y depth</span><input type="number" min="1" max="128" step="1" value={canvasDepth} onChange={event => setCanvasDepth(event.target.value)} /></label>
+                <button type="submit">Resize</button>
+              </div>
+              <small>1–128 blocks per side. Existing blocks that still fit are preserved.</small>
+            </form>
             <div className="layer-actions">
               <button onClick={() => addLayer(false)}>+ Empty layer</button>
               <button onClick={() => addLayer(true)}>Duplicate</button>
