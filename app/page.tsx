@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { jsPDF } from "jspdf";
 
 type Block = {
   id: string;
@@ -59,6 +60,7 @@ export default function Home() {
   const [linePreview, setLinePreview] = useState<number[]>([]);
   const [canvasWidth, setCanvasWidth] = useState("30");
   const [canvasDepth, setCanvasDepth] = useState("30");
+  const [exporting, setExporting] = useState<"pdf" | "png" | null>(null);
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -360,13 +362,195 @@ export default function Home() {
     setLayer(Math.max(0, layer - 1));
   }
 
-  function download() {
-    const blob = new Blob([JSON.stringify(blueprint, null, 2)], { type: "application/json" });
+  function fileStem() {
+    return blueprint.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "untitled-blockprint";
+  }
+
+  function downloadBlob(blob: Blob, filename: string) {
+    const href = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${blueprint.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.blockprint.json`;
+    a.href = href;
+    a.download = filename;
     a.click();
-    URL.revokeObjectURL(a.href);
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
+  }
+
+  function saveProject() {
+    const blob = new Blob([JSON.stringify(blueprint, null, 2)], { type: "application/json" });
+    downloadBlob(blob, `${fileStem()}.blockprint.json`);
+  }
+
+  function layerMaterials(layerData: Record<string, string>) {
+    const counts = new Map<string, number>();
+    Object.values(layerData).forEach(id => counts.set(id, (counts.get(id) ?? 0) + 1));
+    return [...counts.entries()]
+      .map(([id, count]) => ({ block: blocks.find(item => item.id === id), id, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  async function textureImages() {
+    const usedIds = new Set(blueprint.layers.flatMap(layerData => Object.values(layerData)));
+    const entries = await Promise.all(blocks.filter(block => usedIds.has(block.id) && block.textureUrl).map(block =>
+      new Promise<[string, HTMLImageElement | null]>(resolve => {
+        const image = new Image();
+        image.onload = () => resolve([block.id, image]);
+        image.onerror = () => resolve([block.id, null]);
+        image.src = block.textureUrl!;
+      })
+    ));
+    return new Map(entries.filter((entry): entry is [string, HTMLImageElement] => Boolean(entry[1])));
+  }
+
+  function drawLayer(ctx: CanvasRenderingContext2D, layerData: Record<string, string>, x: number, y: number, width: number, height: number, images: Map<string, HTMLImageElement>) {
+    const cell = Math.min(width / blueprint.width, height / blueprint.depth);
+    const gridWidth = cell * blueprint.width;
+    const gridHeight = cell * blueprint.depth;
+    const originX = x + (width - gridWidth) / 2;
+    const originY = y + (height - gridHeight) / 2;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(originX, originY, gridWidth, gridHeight);
+    for (const [key, id] of Object.entries(layerData)) {
+      const index = Number(key);
+      const block = blocks.find(item => item.id === id);
+      const cellX = originX + (index % blueprint.width) * cell;
+      const cellY = originY + Math.floor(index / blueprint.width) * cell;
+      const image = images.get(id);
+      if (image) ctx.drawImage(image, cellX, cellY, cell, cell);
+      else {
+        ctx.fillStyle = block?.color ?? "#8b8f87";
+        ctx.fillRect(cellX, cellY, cell, cell);
+      }
+    }
+    ctx.strokeStyle = "#d7d9d2";
+    ctx.lineWidth = Math.max(0.5, Math.min(1.5, cell / 8));
+    ctx.beginPath();
+    for (let column = 0; column <= blueprint.width; column++) {
+      const lineX = originX + column * cell;
+      ctx.moveTo(lineX, originY);
+      ctx.lineTo(lineX, originY + gridHeight);
+    }
+    for (let row = 0; row <= blueprint.depth; row++) {
+      const lineY = originY + row * cell;
+      ctx.moveTo(originX, lineY);
+      ctx.lineTo(originX + gridWidth, lineY);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = "#4d524c";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(originX, originY, gridWidth, gridHeight);
+  }
+
+  async function exportPng() {
+    setExporting("png");
+    try {
+      const images = await textureImages();
+      const columns = blueprint.layers.length === 1 ? 1 : 2;
+      const rows = Math.ceil(blueprint.layers.length / columns);
+      const panelWidth = 720;
+      const panelHeight = 720;
+      const margin = 48;
+      const canvas = document.createElement("canvas");
+      canvas.width = columns * panelWidth + (columns + 1) * margin;
+      canvas.height = 110 + rows * panelHeight + (rows + 1) * margin;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.fillStyle = "#f3f1e9";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#20231f";
+      ctx.font = "bold 36px Georgia, serif";
+      ctx.fillText(blueprint.name, margin, 54);
+      ctx.fillStyle = "#6e756b";
+      ctx.font = "20px Arial, sans-serif";
+      ctx.fillText(`${blueprint.width} x ${blueprint.depth} blocks - layers lowest to highest`, margin, 86);
+      blueprint.layers.forEach((layerData, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const x = margin + column * (panelWidth + margin);
+        const y = 110 + margin + row * (panelHeight + margin);
+        ctx.fillStyle = "#fffef9";
+        ctx.fillRect(x, y, panelWidth, panelHeight);
+        ctx.fillStyle = "#315f46";
+        ctx.font = "bold 23px Arial, sans-serif";
+        ctx.fillText(`Layer ${index + 1}`, x + 22, y + 34);
+        ctx.fillStyle = "#6e756b";
+        ctx.font = "16px Arial, sans-serif";
+        ctx.fillText(`${Object.keys(layerData).length} blocks`, x + 22, y + 58);
+        drawLayer(ctx, layerData, x + 22, y + 78, panelWidth - 44, panelHeight - 100, images);
+      });
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png"));
+      if (blob) downloadBlob(blob, `${fileStem()}-all-layers.png`);
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function exportPdf() {
+    setExporting("pdf");
+    try {
+      const images = await textureImages();
+      const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4", compress: true });
+      for (let index = 0; index < blueprint.layers.length; index++) {
+        if (index > 0) pdf.addPage("a4", "landscape");
+        const layerData = blueprint.layers[index];
+        const canvas = document.createElement("canvas");
+        canvas.width = 1684;
+        canvas.height = 1190;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) continue;
+        ctx.fillStyle = "#f3f1e9";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#20231f";
+        ctx.font = "bold 42px Georgia, serif";
+        ctx.fillText(blueprint.name, 70, 72);
+        ctx.fillStyle = "#315f46";
+        ctx.font = "bold 26px Arial, sans-serif";
+        ctx.fillText(`Layer ${index + 1} of ${blueprint.layers.length}`, 70, 112);
+        ctx.fillStyle = "#6e756b";
+        ctx.font = "20px Arial, sans-serif";
+        ctx.fillText(`${blueprint.width} x ${blueprint.depth} blocks`, 70, 144);
+        drawLayer(ctx, layerData, 70, 180, 1050, 920, images);
+
+        const materials = layerMaterials(layerData);
+        ctx.fillStyle = "#fffef9";
+        ctx.fillRect(1160, 180, 454, 920);
+        ctx.fillStyle = "#20231f";
+        ctx.font = "bold 28px Georgia, serif";
+        ctx.fillText("Layer materials", 1192, 228);
+        ctx.fillStyle = "#6e756b";
+        ctx.font = "18px Arial, sans-serif";
+        ctx.fillText(`${Object.keys(layerData).length} total blocks`, 1192, 260);
+        if (!materials.length) {
+          ctx.fillText("This layer is empty.", 1192, 310);
+        } else {
+          const columns = materials.length > 30 ? 2 : 1;
+          const rows = Math.ceil(materials.length / columns);
+          const rowHeight = Math.min(31, 790 / rows);
+          const columnWidth = 207;
+          materials.forEach(({ block, id, count }, materialIndex) => {
+            const column = Math.floor(materialIndex / rows);
+            const row = materialIndex % rows;
+            const itemX = 1192 + column * columnWidth;
+            const itemY = 300 + row * rowHeight;
+            const swatchSize = Math.max(10, Math.min(22, rowHeight - 5));
+            const image = images.get(id);
+            if (image) ctx.drawImage(image, itemX, itemY, swatchSize, swatchSize);
+            else {
+              ctx.fillStyle = block?.color ?? "#8b8f87";
+              ctx.fillRect(itemX, itemY, swatchSize, swatchSize);
+            }
+            ctx.fillStyle = "#20231f";
+            ctx.font = `${Math.max(10, Math.min(16, rowHeight - 8))}px Arial, sans-serif`;
+            const name = block?.name ?? id;
+            const maxName = columns === 2 ? 18 : 34;
+            ctx.fillText(`${name.length > maxName ? `${name.slice(0, maxName - 1)}…` : name} x${count}`, itemX + swatchSize + 8, itemY + swatchSize - 3);
+          });
+        }
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.9), "JPEG", 0, 0, 841.89, 595.28, undefined, "FAST");
+      }
+      pdf.save(`${fileStem()}-layers.pdf`);
+    } finally {
+      setExporting(null);
+    }
   }
 
   function importFile(file?: File) {
@@ -391,7 +575,9 @@ export default function Home() {
           onChange={e => setBlueprint({ ...blueprint, name: e.target.value })} />
         <div className="header-actions">
           <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
-          <button className="button primary" onClick={download}>Export blueprint</button>
+          <button className="button primary" onClick={saveProject}>Save project</button>
+          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
+          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
         </div>
       </header>
 

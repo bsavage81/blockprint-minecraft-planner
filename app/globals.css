@@ -20,7 +20,7 @@ button:disabled { cursor:not-allowed; opacity:.35; }
 .brand span { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; }
 .project-name { width:100%; max-width:460px; justify-self:center; border:0; border-bottom:1px solid transparent; background:transparent; text-align:center; font-family:Georgia,serif; font-size:21px; padding:8px; }
 .project-name:hover,.project-name:focus { outline:0; border-bottom-color:var(--line); }
-.header-actions { display:flex; gap:8px; }
+.header-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
 .button { display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:5px; padding:9px 13px; background:var(--panel); color:var(--ink); font-weight:650; font-size:13px; }
 .button.primary { color:white; background:var(--green); border-color:var(--green); }
 .button:hover { transform:translateY(-1px); }
