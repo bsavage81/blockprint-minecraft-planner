@@ -61,6 +61,7 @@ export default function Home() {
   const [canvasWidth, setCanvasWidth] = useState("30");
   const [canvasDepth, setCanvasDepth] = useState("30");
   const [exporting, setExporting] = useState<"pdf" | "png" | null>(null);
+  const [recentBlocks, setRecentBlocks] = useState<string[]>([]);
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -133,6 +134,12 @@ export default function Home() {
     b.name.toLowerCase().includes(search.toLowerCase())
   );
   const current = blueprint.layers[layer] ?? {};
+  const selectedBlock = blocks.find(block => block.id === selected);
+  const recentBlockOptions = recentBlocks
+    .filter(id => id !== selected)
+    .map(id => blocks.find(block => block.id === id))
+    .filter((block): block is Block => Boolean(block))
+    .slice(0, 10);
   const materialCounts = useMemo(() => {
     const counts = new Map<string, number>();
     blueprint.layers.forEach(l => Object.values(l).forEach(id => counts.set(id, (counts.get(id) ?? 0) + 1)));
@@ -311,11 +318,16 @@ export default function Home() {
     });
   }
 
+  function chooseBlock(blockId: string) {
+    setRecentBlocks(previous => [blockId, selected, ...previous].filter((id, index, items) => items.indexOf(id) === index).slice(0, 11));
+    setSelected(blockId);
+    setTool("paint");
+  }
+
   function pickBlock(index: number) {
     const blockId = current[index];
     if (!blockId) return;
-    setSelected(blockId);
-    setTool("paint");
+    chooseBlock(blockId);
   }
 
   function changeSize(width: number, depth: number) {
@@ -598,7 +610,7 @@ export default function Home() {
           <div className="block-list">
             {visibleBlocks.map(block => (
               <button key={block.id} className={`block-option ${selected === block.id && tool === "paint" ? "selected" : ""}`}
-                onClick={() => { setSelected(block.id); setTool("paint"); }}>
+                onClick={() => chooseBlock(block.id)}>
                 <span className="block-swatch" style={{
                   backgroundColor:block.color,
                   backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
@@ -636,6 +648,27 @@ export default function Home() {
               <button disabled={layer === blueprint.layers.length - 1} onClick={() => setLayer(layer + 1)}>→</button>
             </div>
             <label className="grid-toggle"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
+            <div className="block-history" aria-label="Selected and recently used blocks">
+              <span className="block-history-label">Current</span>
+              {selectedBlock && <button className="current-block" onClick={() => setTool("paint")} title={`Paint with ${selectedBlock.name}`}>
+                <span className="history-swatch" style={{
+                  backgroundColor:selectedBlock.color,
+                  backgroundImage:selectedBlock.textureUrl ? `url(${selectedBlock.textureUrl})` : selectedBlock.texture,
+                  backgroundSize:selectedBlock.textureUrl ? "cover" : undefined
+                }} />
+                <span>{selectedBlock.name}</span>
+              </button>}
+              <span className="block-history-label recent-label">Recent</span>
+              <div className="recent-blocks">
+                {recentBlockOptions.length ? recentBlockOptions.map(block => <button key={block.id} onClick={() => chooseBlock(block.id)} title={block.name} aria-label={`Paint with recently used ${block.name}`}>
+                  <span className="history-swatch" style={{
+                    backgroundColor:block.color,
+                    backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
+                    backgroundSize:block.textureUrl ? "cover" : undefined
+                  }} />
+                </button>) : <span className="recent-empty">Your recent blocks will appear here.</span>}
+              </div>
+            </div>
           </div>
           <div className="canvas-scroll">
             <div className={`blueprint-grid ${showGrid ? "" : "grid-off"}`}
@@ -727,7 +760,7 @@ export default function Home() {
               <ol>{materialCounts.map(([id, amount]) => {
                 const block = blocks.find(b => b.id === id);
                 if (!block) return null;
-                return <li key={id}><button onClick={() => { setSelected(id); setTool("paint"); }} title={`Paint with ${block.name}`}>
+                return <li key={id}><button onClick={() => chooseBlock(id)} title={`Paint with ${block.name}`}>
                   <span className="mini-swatch" style={{
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
