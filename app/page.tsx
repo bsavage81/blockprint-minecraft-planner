@@ -630,7 +630,13 @@ export default function Home() {
         </div>
         <input className="project-name" aria-label="Blueprint name" value={blueprint.name}
           onChange={e => setBlueprint({ ...blueprint, name: e.target.value })} />
-        <div className="topbar-spacer" aria-hidden="true" />
+        <div className="header-actions">
+          <button className="button secondary" onClick={newProject}>New project</button>
+          <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
+          <button className="button primary" onClick={saveProject}>Save project</button>
+          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
+          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
+        </div>
       </header>
 
       <section className={`workspace ${paletteCollapsed ? "left-collapsed" : ""} ${detailsCollapsed ? "right-collapsed" : ""}`}>
@@ -770,16 +776,6 @@ export default function Home() {
 
         <aside className={`details-panel ${detailsCollapsed ? "collapsed" : ""}`}>
           <button className="sidebar-toggle details-toggle" onClick={() => setDetailsCollapsed(value => !value)} aria-label={detailsCollapsed ? "Expand project sidebar" : "Minimize project sidebar"} title={detailsCollapsed ? "Expand project sidebar" : "Minimize project sidebar"}>{detailsCollapsed ? "‹" : "›"}</button>
-          <section className="project-files">
-            <span className="eyebrow">Project</span><h2>Files & exports</h2>
-            <div className="project-actions">
-              <button className="button secondary" onClick={newProject}>New project</button>
-              <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
-              <button className="button primary" onClick={saveProject}>Save project</button>
-              <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
-              <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
-            </div>
-          </section>
           <section className="layer-view-panel">
             <span className="eyebrow">Canvas</span><h2>Layer & view</h2>
             <div className="layer-nav">
