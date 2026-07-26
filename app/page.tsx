@@ -110,6 +110,9 @@ export default function Home() {
       } else if (command && event.key.toLowerCase() === "v" && clipboard) {
         event.preventDefault();
         pasteSelection();
+      } else if (event.key === "Delete" && selection) {
+        event.preventDefault();
+        deleteSelection();
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -192,6 +195,12 @@ export default function Home() {
   function cutSelection() {
     const bounds = selectionBounds();
     if (!bounds || !copySelection()) return;
+    deleteSelection();
+  }
+
+  function deleteSelection() {
+    const bounds = selectionBounds();
+    if (!bounds) return;
     checkpoint();
     setBlueprint(previous => {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
@@ -390,6 +399,7 @@ export default function Home() {
                 <button disabled={!selection} onClick={copySelection} title="Copy (Ctrl+C)">Copy</button>
                 <button disabled={!selection} onClick={cutSelection} title="Cut (Ctrl+X)">Cut</button>
                 <button disabled={!clipboard} onClick={pasteSelection} title="Paste at selection (Ctrl+V)">Paste</button>
+                <button disabled={!selection} onClick={deleteSelection} title="Delete selection (Delete)">Delete</button>
                 <button disabled={!selection} onClick={() => { setSelection(null); selecting.current = false; }} title="Cancel selection (Esc)">Cancel</button>
               </div>
             </div>
@@ -492,7 +502,7 @@ export default function Home() {
           </section>
           <section className="quick-tips">
             <span className="eyebrow">Drawing tools</span>
-            <p>Drag Line between two cells for straight walls. Fill replaces a connected area. Select supports Ctrl/Cmd+C, X, and V.</p>
+            <p>Drag Line between two cells for straight walls. Fill replaces a connected area. Select supports Ctrl/Cmd+C, X, and V; Delete clears the area and Esc cancels it.</p>
           </section>
         </aside>
       </section>
