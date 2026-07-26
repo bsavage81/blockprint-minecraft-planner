@@ -420,6 +420,21 @@ export default function Home() {
     downloadBlob(blob, `${fileStem()}.blockprint.json`);
   }
 
+  function newProject() {
+    if (!window.confirm("Start a new project? Save the current project first if you want to keep it.")) return;
+    checkpoint();
+    setBlueprint(structuredClone(EMPTY_BLUEPRINT));
+    setLayer(0);
+    setSelection(null);
+    setClipboard(null);
+    setLinePreview([]);
+    painting.current = false;
+    selecting.current = false;
+    lining.current = false;
+    lineStart.current = null;
+    lineEnd.current = null;
+  }
+
   function layerMaterials(layerData: Record<string, string>) {
     const counts = new Map<string, number>();
     Object.values(layerData).forEach(id => counts.set(id, (counts.get(id) ?? 0) + 1));
@@ -614,6 +629,7 @@ export default function Home() {
         <input className="project-name" aria-label="Blueprint name" value={blueprint.name}
           onChange={e => setBlueprint({ ...blueprint, name: e.target.value })} />
         <div className="header-actions">
+          <button className="button secondary" onClick={newProject}>New project</button>
           <label className="button secondary">Import<input type="file" accept=".json" hidden onChange={e => importFile(e.target.files?.[0])}/></label>
           <button className="button primary" onClick={saveProject}>Save project</button>
           <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
