@@ -50,15 +50,19 @@ export default function Home() {
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
-  const [tool, setTool] = useState<"paint" | "erase" | "select">("paint");
+  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill">("paint");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const [history, setHistory] = useState<Blueprint[]>([]);
+  const [linePreview, setLinePreview] = useState<number[]>([]);
   const painting = useRef(false);
   const selecting = useRef(false);
+  const lining = useRef(false);
+  const lineStart = useRef<number | null>(null);
+  const lineEnd = useRef<number | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");
@@ -215,6 +219,68 @@ export default function Home() {
     setSelection({ start: anchorY * blueprint.width + anchorX, end: endY * blueprint.width + endX });
   }
 
+  function lineIndices(start: number, end: number) {
+    let x0 = start % blueprint.width;
+    let y0 = Math.floor(start / blueprint.width);
+    const x1 = end % blueprint.width;
+    const y1 = Math.floor(end / blueprint.width);
+    const dx = Math.abs(x1 - x0);
+    const sx = x0 < x1 ? 1 : -1;
+    const dy = -Math.abs(y1 - y0);
+    const sy = y0 < y1 ? 1 : -1;
+    let error = dx + dy;
+    const result: number[] = [];
+    while (true) {
+      result.push(y0 * blueprint.width + x0);
+      if (x0 === x1 && y0 === y1) break;
+      const doubled = 2 * error;
+      if (doubled >= dy) { error += dy; x0 += sx; }
+      if (doubled <= dx) { error += dx; y0 += sy; }
+    }
+    return result;
+  }
+
+  function commitLine() {
+    if (!lining.current || lineStart.current === null || lineEnd.current === null) return;
+    const indices = lineIndices(lineStart.current, lineEnd.current);
+    checkpoint();
+    setBlueprint(previous => {
+      const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      indices.forEach(index => { layers[layer][index] = selected; });
+      return { ...previous, layers };
+    });
+    lining.current = false;
+    lineStart.current = null;
+    lineEnd.current = null;
+    setLinePreview([]);
+  }
+
+  function fillArea(start: number) {
+    const target = current[start];
+    if (target === selected) return;
+    const visited = new Set<number>();
+    const queue = [start];
+    const matches = (index: number) => current[index] === target;
+    while (queue.length) {
+      const index = queue.pop()!;
+      if (visited.has(index) || !matches(index)) continue;
+      visited.add(index);
+      const x = index % blueprint.width;
+      const y = Math.floor(index / blueprint.width);
+      if (x > 0) queue.push(index - 1);
+      if (x < blueprint.width - 1) queue.push(index + 1);
+      if (y > 0) queue.push(index - blueprint.width);
+      if (y < blueprint.depth - 1) queue.push(index + blueprint.width);
+    }
+    if (!visited.size) return;
+    checkpoint();
+    setBlueprint(previous => {
+      const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      visited.forEach(index => { layers[layer][index] = selected; });
+      return { ...previous, layers };
+    });
+  }
+
   function paintCell(index: number) {
     setBlueprint(prev => {
       const layers = prev.layers.map((l, i) => i === layer ? { ...l } : l);
@@ -311,6 +377,8 @@ export default function Home() {
               <div className="tool-group">
                 <button className={tool === "paint" ? "active" : ""} onClick={() => setTool("paint")}>Paint</button>
                 <button className={tool === "erase" ? "active" : ""} onClick={() => setTool("erase")}>Erase</button>
+                <button className={tool === "line" ? "active" : ""} onClick={() => setTool("line")}>Line</button>
+                <button className={tool === "fill" ? "active" : ""} onClick={() => setTool("fill")}>Fill</button>
                 <button className={tool === "select" ? "active" : ""} onClick={() => setTool("select")}>Select</button>
               </div>
               <div className="edit-group" aria-label="Edit selection">
@@ -330,12 +398,24 @@ export default function Home() {
           <div className="canvas-scroll">
             <div className={`blueprint-grid ${showGrid ? "" : "grid-off"}`}
               style={{ gridTemplateColumns:`repeat(${blueprint.width}, var(--cell))`, gridTemplateRows:`repeat(${blueprint.depth}, var(--cell))` }}
-              onPointerLeave={() => { painting.current = false; }}
-              onPointerUp={() => { painting.current = false; selecting.current = false; }}>
+              onPointerLeave={() => {
+                painting.current = false;
+                if (lining.current) {
+                  lining.current = false;
+                  lineStart.current = null;
+                  lineEnd.current = null;
+                  setLinePreview([]);
+                }
+              }}
+              onPointerUp={() => {
+                if (lining.current) commitLine();
+                painting.current = false;
+                selecting.current = false;
+              }}>
               {Array.from({ length: blueprint.width * blueprint.depth }, (_, index) => {
                 const block = blocks.find(b => b.id === current[index]);
                 return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${block ? `, ${block.name}` : ", empty"}`}
-                  className={`cell ${block ? "filled" : ""} ${selectionClass(index)}`}
+                  className={`cell ${block ? "filled" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
                   style={block ? {
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
@@ -346,6 +426,13 @@ export default function Home() {
                     if (tool === "select") {
                       selecting.current = true;
                       setSelection({ start:index, end:index });
+                    } else if (tool === "line") {
+                      lining.current = true;
+                      lineStart.current = index;
+                      lineEnd.current = index;
+                      setLinePreview([index]);
+                    } else if (tool === "fill") {
+                      fillArea(index);
                     } else {
                       checkpoint();
                       painting.current = true;
@@ -355,6 +442,9 @@ export default function Home() {
                   onPointerEnter={() => {
                     if (tool === "select" && selecting.current) {
                       setSelection(previous => ({ start: previous?.start ?? index, end:index }));
+                    } else if (tool === "line" && lining.current && lineStart.current !== null) {
+                      lineEnd.current = index;
+                      setLinePreview(lineIndices(lineStart.current, index));
                     } else if (painting.current) paintCell(index);
                   }} />;
               })}
@@ -396,8 +486,8 @@ export default function Home() {
               })}</ol>}
           </section>
           <section className="quick-tips">
-            <span className="eyebrow">Selection shortcuts</span>
-            <p>Drag with Select, then use Ctrl/Cmd+C, X, or V. Undo with Ctrl/Cmd+Z and clear the selection with Escape.</p>
+            <span className="eyebrow">Drawing tools</span>
+            <p>Drag Line between two cells for straight walls. Fill replaces a connected area. Select supports Ctrl/Cmd+C, X, and V.</p>
           </section>
         </aside>
       </section>
