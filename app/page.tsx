@@ -676,24 +676,6 @@ export default function Home() {
                 <button disabled={!selection} onClick={() => { setSelection(null); selecting.current = false; }} title="Cancel selection (Esc)">Cancel</button>
               </div>
             </div>
-            <div className="layer-nav">
-              <button disabled={layer === 0} onClick={() => setLayer(layer - 1)}>←</button>
-              <span><small>Layer</small><strong>{layer + 1} / {blueprint.layers.length}</strong></span>
-              <button disabled={layer === blueprint.layers.length - 1} onClick={() => setLayer(layer + 1)}>→</button>
-            </div>
-            <div className="view-controls">
-              <label className="grid-toggle"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
-              <label className="grid-toggle previous-toggle" title={layer === 0 ? "Available from Layer 2 onward" : "Show blocks from lower layers at 50% opacity"}>
-                <input type="checkbox" disabled={layer === 0} checked={showPreviousLayers && layer > 0} onChange={e => setShowPreviousLayers(e.target.checked)} /> Below 50%
-              </label>
-              <div className="zoom-controls" aria-label="Canvas zoom">
-                <button onClick={() => setZoom(value => Math.max(4, value - 2))} disabled={zoom <= 4} title="Zoom out (Ctrl+-)">−</button>
-                <input type="range" min="4" max="40" step="1" value={zoom} onChange={event => setZoom(Number(event.target.value))} aria-label="Zoom level" />
-                <button onClick={() => setZoom(value => Math.min(40, value + 2))} disabled={zoom >= 40} title="Zoom in (Ctrl++)">+</button>
-                <span>{Math.round(zoom / 22 * 100)}%</span>
-                <button className="fit-button" onClick={fitZoom} title="Fit grid (Ctrl+0)">Fit</button>
-              </div>
-            </div>
             <div className="block-history" aria-label="Selected and recently used blocks">
               <span className="block-history-label">Current</span>
               {selectedBlock && <button className="current-block" onClick={() => setTool("paint")} title={`Paint with ${selectedBlock.name}`}>
@@ -796,6 +778,29 @@ export default function Home() {
               <button className="button primary" onClick={saveProject}>Save project</button>
               <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
               <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
+            </div>
+          </section>
+          <section className="layer-view-panel">
+            <span className="eyebrow">Canvas</span><h2>Layer & view</h2>
+            <div className="layer-nav">
+              <button disabled={layer === 0} onClick={() => setLayer(layer - 1)}>←</button>
+              <span><small>Layer</small><strong>{layer + 1} / {blueprint.layers.length}</strong></span>
+              <button disabled={layer === blueprint.layers.length - 1} onClick={() => setLayer(layer + 1)}>→</button>
+            </div>
+            <div className="view-controls">
+              <div className="view-toggles">
+                <label className="grid-toggle"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
+                <label className="grid-toggle previous-toggle" title={layer === 0 ? "Available from Layer 2 onward" : "Show blocks from lower layers at 50% opacity"}>
+                  <input type="checkbox" disabled={layer === 0} checked={showPreviousLayers && layer > 0} onChange={e => setShowPreviousLayers(e.target.checked)} /> Below 50%
+                </label>
+              </div>
+              <div className="zoom-controls" aria-label="Canvas zoom">
+                <button onClick={() => setZoom(value => Math.max(4, value - 2))} disabled={zoom <= 4} title="Zoom out (Ctrl+-)">−</button>
+                <input type="range" min="4" max="40" step="1" value={zoom} onChange={event => setZoom(Number(event.target.value))} aria-label="Zoom level" />
+                <button onClick={() => setZoom(value => Math.min(40, value + 2))} disabled={zoom >= 40} title="Zoom in (Ctrl++)">+</button>
+                <span>{Math.round(zoom / 22 * 100)}%</span>
+                <button className="fit-button" onClick={fitZoom} title="Fit grid (Ctrl+0)">Fit</button>
+              </div>
             </div>
           </section>
           <section>
