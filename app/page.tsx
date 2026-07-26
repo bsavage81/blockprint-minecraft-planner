@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { jsPDF } from "jspdf";
 
 type Block = {
@@ -62,11 +62,13 @@ export default function Home() {
   const [canvasDepth, setCanvasDepth] = useState("30");
   const [exporting, setExporting] = useState<"pdf" | "png" | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<string[]>([]);
+  const [zoom, setZoom] = useState(22);
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
   const lineStart = useRef<number | null>(null);
   const lineEnd = useRef<number | null>(null);
+  const canvasViewport = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");
@@ -110,6 +112,15 @@ export default function Home() {
       if (command && event.key.toLowerCase() === "z") {
         event.preventDefault();
         undo();
+      } else if (command && (event.key === "+" || event.key === "=")) {
+        event.preventDefault();
+        setZoom(value => Math.min(40, value + 2));
+      } else if (command && event.key === "-") {
+        event.preventDefault();
+        setZoom(value => Math.max(4, value - 2));
+      } else if (command && event.key === "0") {
+        event.preventDefault();
+        fitZoom();
       } else if (command && event.key.toLowerCase() === "c" && selection) {
         event.preventDefault();
         copySelection();
@@ -362,6 +373,15 @@ export default function Home() {
       return;
     }
     changeSize(width, depth);
+  }
+
+  function fitZoom() {
+    const viewport = canvasViewport.current;
+    if (!viewport) return;
+    const availableWidth = Math.max(1, viewport.clientWidth - 56);
+    const availableHeight = Math.max(1, viewport.clientHeight - 56);
+    const fitted = Math.floor(Math.min(availableWidth / blueprint.width, availableHeight / blueprint.depth));
+    setZoom(Math.min(40, Math.max(4, fitted)));
   }
 
   function addLayer(copy = false) {
@@ -647,7 +667,16 @@ export default function Home() {
               <span><small>Layer</small><strong>{layer + 1} / {blueprint.layers.length}</strong></span>
               <button disabled={layer === blueprint.layers.length - 1} onClick={() => setLayer(layer + 1)}>→</button>
             </div>
-            <label className="grid-toggle"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
+            <div className="view-controls">
+              <label className="grid-toggle"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
+              <div className="zoom-controls" aria-label="Canvas zoom">
+                <button onClick={() => setZoom(value => Math.max(4, value - 2))} disabled={zoom <= 4} title="Zoom out (Ctrl+-)">−</button>
+                <input type="range" min="4" max="40" step="1" value={zoom} onChange={event => setZoom(Number(event.target.value))} aria-label="Zoom level" />
+                <button onClick={() => setZoom(value => Math.min(40, value + 2))} disabled={zoom >= 40} title="Zoom in (Ctrl++)">+</button>
+                <span>{Math.round(zoom / 22 * 100)}%</span>
+                <button className="fit-button" onClick={fitZoom} title="Fit grid (Ctrl+0)">Fit</button>
+              </div>
+            </div>
             <div className="block-history" aria-label="Selected and recently used blocks">
               <span className="block-history-label">Current</span>
               {selectedBlock && <button className="current-block" onClick={() => setTool("paint")} title={`Paint with ${selectedBlock.name}`}>
@@ -670,9 +699,9 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="canvas-scroll">
+          <div className="canvas-scroll" ref={canvasViewport}>
             <div className={`blueprint-grid ${showGrid ? "" : "grid-off"}`}
-              style={{ gridTemplateColumns:`repeat(${blueprint.width}, var(--cell))`, gridTemplateRows:`repeat(${blueprint.depth}, var(--cell))` }}
+              style={{ "--cell":`${zoom}px`, gridTemplateColumns:`repeat(${blueprint.width}, var(--cell))`, gridTemplateRows:`repeat(${blueprint.depth}, var(--cell))` } as CSSProperties}
               onPointerLeave={() => {
                 painting.current = false;
                 if (lining.current) {
