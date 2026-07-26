@@ -50,7 +50,7 @@ export default function Home() {
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
-  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill">("paint");
+  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "picker">("paint");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
@@ -309,6 +309,13 @@ export default function Home() {
       else layers[layer][index] = selected;
       return { ...prev, layers };
     });
+  }
+
+  function pickBlock(index: number) {
+    const blockId = current[index];
+    if (!blockId) return;
+    setSelected(blockId);
+    setTool("paint");
   }
 
   function changeSize(width: number, depth: number) {
@@ -611,6 +618,7 @@ export default function Home() {
                 <button className={tool === "erase" ? "active" : ""} onClick={() => setTool("erase")}>Erase</button>
                 <button className={tool === "line" ? "active" : ""} onClick={() => setTool("line")}>Line</button>
                 <button className={tool === "fill" ? "active" : ""} onClick={() => setTool("fill")}>Fill</button>
+                <button className={tool === "picker" ? "active" : ""} onClick={() => setTool("picker")} title="Pick a block (Alt+click)">Picker</button>
                 <button className={tool === "select" ? "active" : ""} onClick={() => setTool("select")}>Select</button>
               </div>
               <div className="edit-group" aria-label="Edit selection">
@@ -657,7 +665,9 @@ export default function Home() {
                   } : undefined}
                   onPointerDown={e => {
                     e.preventDefault();
-                    if (tool === "select") {
+                    if (e.altKey || tool === "picker") {
+                      pickBlock(index);
+                    } else if (tool === "select") {
                       selecting.current = true;
                       setSelection({ start:index, end:index });
                     } else if (tool === "line") {
@@ -717,16 +727,18 @@ export default function Home() {
               <ol>{materialCounts.map(([id, amount]) => {
                 const block = blocks.find(b => b.id === id);
                 if (!block) return null;
-                return <li key={id}><span className="mini-swatch" style={{
-                  backgroundColor:block.color,
-                  backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
-                  backgroundSize:block.textureUrl ? "cover" : undefined
-                }}/><span>{block.name}</span><strong>{amount}</strong></li>;
+                return <li key={id}><button onClick={() => { setSelected(id); setTool("paint"); }} title={`Paint with ${block.name}`}>
+                  <span className="mini-swatch" style={{
+                    backgroundColor:block.color,
+                    backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
+                    backgroundSize:block.textureUrl ? "cover" : undefined
+                  }}/><span>{block.name}</span><strong>{amount}</strong>
+                </button></li>;
               })}</ol>}
           </section>
           <section className="quick-tips">
             <span className="eyebrow">Drawing tools</span>
-            <p>Drag Line between two cells for straight walls. Fill replaces a connected area. Select supports Ctrl/Cmd+C, X, and V; Delete clears the area and Esc cancels it.</p>
+            <p>Use Picker or Alt+click a painted cell to sample its block. Material-list rows also select blocks. Drag Line for walls; Fill replaces a connected area.</p>
           </section>
         </aside>
       </section>

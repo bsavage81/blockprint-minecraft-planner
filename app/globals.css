@@ -89,7 +89,8 @@ h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .layer-actions button { padding:8px 7px; }
 .layer-actions .danger { grid-column:1/-1; color:#9b3d32; }
 .materials ol { list-style:none; padding:0; margin:13px 0 0; display:grid; gap:7px; max-height:280px; overflow:auto; }
-.materials li { display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:8px; font-size:11px; }
+.materials li button { display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:8px; width:100%; border:0; border-radius:4px; padding:4px; background:transparent; color:var(--ink); text-align:left; font-size:11px; }
+.materials li button:hover,.materials li button:focus-visible { background:#eef1e8; outline:0; }
 .materials li strong { font-variant-numeric:tabular-nums; }
 .mini-swatch { width:20px; height:20px; border:1px solid rgba(0,0,0,.18); background-size:7px 7px; }
 .empty-state,.quick-tips p { color:var(--muted); font-size:12px; line-height:1.55; }
