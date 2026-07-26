@@ -89,6 +89,12 @@ export default function Home() {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelection(null);
+        selecting.current = false;
+        return;
+      }
       const active = document.activeElement;
       if (active instanceof HTMLInputElement || active instanceof HTMLSelectElement || active instanceof HTMLTextAreaElement) return;
       const command = event.ctrlKey || event.metaKey;
@@ -104,8 +110,6 @@ export default function Home() {
       } else if (command && event.key.toLowerCase() === "v" && clipboard) {
         event.preventDefault();
         pasteSelection();
-      } else if (event.key === "Escape") {
-        setSelection(null);
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -386,6 +390,7 @@ export default function Home() {
                 <button disabled={!selection} onClick={copySelection} title="Copy (Ctrl+C)">Copy</button>
                 <button disabled={!selection} onClick={cutSelection} title="Cut (Ctrl+X)">Cut</button>
                 <button disabled={!clipboard} onClick={pasteSelection} title="Paste at selection (Ctrl+V)">Paste</button>
+                <button disabled={!selection} onClick={() => { setSelection(null); selecting.current = false; }} title="Cancel selection (Esc)">Cancel</button>
               </div>
             </div>
             <div className="layer-nav">
