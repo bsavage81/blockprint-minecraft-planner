@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { jsPDF } from "jspdf";
-import { read as readNbt } from "nbtify";
+import { Int32, TAG, TAG_TYPE, read as readNbt, write as writeNbt } from "nbtify";
 
 type Block = {
   id: string;
@@ -63,7 +63,7 @@ export default function Home() {
   const [linePreview, setLinePreview] = useState<number[]>([]);
   const [canvasWidth, setCanvasWidth] = useState("30");
   const [canvasDepth, setCanvasDepth] = useState("30");
-  const [exporting, setExporting] = useState<"pdf" | "png" | null>(null);
+  const [exporting, setExporting] = useState<"pdf" | "png" | "mcstructure" | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<string[]>([]);
   const [zoom, setZoom] = useState(22);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
@@ -615,6 +615,96 @@ export default function Home() {
     }
   }
 
+  function minecraftNameForBlock(blockId: string) {
+    if (blockId.startsWith("mcstructure:")) return `minecraft:${blockId.slice("mcstructure:".length).replace(/^minecraft:/, "")}`;
+    let localName = blockId.replace(/^[^:]+:/, "");
+    const aliases: Record<string, string> = {
+      planks: "oak_planks",
+      still_water: "water",
+      flowing_water: "water",
+      still_lava: "lava",
+      flowing_lava: "lava",
+      log_oak: "oak_log",
+    };
+    localName = aliases[localName] ?? localName;
+    localName = localName.replace(/_(side|top|bottom|front|back|carried)$/, "");
+    localName = localName.replace(/[^a-z0-9_]/g, "_");
+    return `minecraft:${localName || "stone"}`;
+  }
+
+  function typedNbtList<T>(values: T[], type: TAG) {
+    Object.defineProperty(values, TAG_TYPE, { value:type, enumerable:false });
+    return values;
+  }
+
+  async function exportMcstructure() {
+    setExporting("mcstructure");
+    try {
+      const paletteNames = ["minecraft:air"];
+      const paletteByName = new Map<string, number>([["minecraft:air", 0]]);
+      const paletteByBlock = new Map<string, number>();
+      for (const layerData of blueprint.layers) {
+        for (const blockId of Object.values(layerData)) {
+          if (paletteByBlock.has(blockId)) continue;
+          const minecraftName = minecraftNameForBlock(blockId);
+          let paletteIndex = paletteByName.get(minecraftName);
+          if (paletteIndex === undefined) {
+            paletteIndex = paletteNames.length;
+            paletteNames.push(minecraftName);
+            paletteByName.set(minecraftName, paletteIndex);
+          }
+          paletteByBlock.set(blockId, paletteIndex);
+        }
+      }
+
+      const primary: Int32[] = [];
+      const secondary: Int32[] = [];
+      for (let x = 0; x < blueprint.width; x++) {
+        for (let y = 0; y < blueprint.layers.length; y++) {
+          for (let z = 0; z < blueprint.depth; z++) {
+            const blockId = blueprint.layers[y][z * blueprint.width + x];
+            primary.push(new Int32(blockId ? (paletteByBlock.get(blockId) ?? 0) : 0));
+            secondary.push(new Int32(-1));
+          }
+        }
+      }
+
+      const entities = typedNbtList<Record<string, unknown>>([], TAG.COMPOUND);
+      const root = {
+        format_version:new Int32(1),
+        size:[
+          new Int32(blueprint.width),
+          new Int32(blueprint.layers.length),
+          new Int32(blueprint.depth),
+        ],
+        structure:{
+          block_indices:[primary, secondary],
+          entities,
+          palette:{
+            default:{
+              block_palette:paletteNames.map(name => ({
+                name,
+                states:{},
+                version:new Int32(18168865),
+              })),
+              block_position_data:{},
+            },
+          },
+        },
+        structure_world_origin:[new Int32(0), new Int32(0), new Int32(0)],
+      };
+      const binary = await writeNbt(root, { endian:"little", compression:null, rootName:"" });
+      await readNbt(binary, { endian:"little", compression:null });
+      const downloadable = new Uint8Array(binary.byteLength);
+      downloadable.set(binary);
+      downloadBlob(new Blob([downloadable.buffer], { type:"application/octet-stream" }), `${fileStem()}.mcstructure`);
+    } catch (error) {
+      window.alert(error instanceof Error ? `Could not export structure: ${error.message}` : "Could not export this structure.");
+    } finally {
+      setExporting(null);
+    }
+  }
+
   function textureForStructureBlock(localName: string) {
     const aliases: Record<string, string[]> = {
       air: [],
@@ -767,6 +857,7 @@ export default function Home() {
           <button className="button primary" onClick={saveProject}>Save project</button>
           <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPdf}>{exporting === "pdf" ? "Making PDF…" : "Export PDF"}</button>
           <button className="button secondary" disabled={Boolean(exporting)} onClick={exportPng}>{exporting === "png" ? "Making PNG…" : "Export PNG"}</button>
+          <button className="button secondary" disabled={Boolean(exporting)} onClick={exportMcstructure}>{exporting === "mcstructure" ? "Making structure…" : "Export MCStructure"}</button>
         </div>
       </header>
 
