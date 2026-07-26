@@ -11,6 +11,9 @@ type Block = {
   color?: string;
   texture?: string;
   textureUrl?: string;
+  minecraftName?: string;
+  minecraftStates?: Record<string, string | number | boolean>;
+  sourceRotation?: number;
 };
 
 type Blueprint = {
@@ -18,11 +21,12 @@ type Blueprint = {
   width: number;
   depth: number;
   layers: Record<string, string>[];
+  rotations?: Record<string, number>[];
   customBlocks?: Block[];
 };
 
 type Selection = { start: number; end: number };
-type Clipboard = { width: number; height: number; cells: Record<string, string> };
+type Clipboard = { width: number; height: number; cells: Record<string, string>; rotations: Record<string, number> };
 
 const BLOCKS: Block[] = [
   { id: "oak", name: "Oak Planks", category: "Wood", color: "#b88952", texture: "linear-gradient(0deg,#8a613c 1px,transparent 1px)" },
@@ -52,6 +56,7 @@ export default function Home() {
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
+  const [selectedRotation, setSelectedRotation] = useState(0);
   const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "picker">("paint");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -139,6 +144,9 @@ export default function Home() {
       } else if (event.key === "Delete" && selection) {
         event.preventDefault();
         deleteSelection();
+      } else if (!command && event.key.toLowerCase() === "r") {
+        event.preventDefault();
+        rotateSelected();
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -151,6 +159,7 @@ export default function Home() {
     b.name.toLowerCase().includes(search.toLowerCase())
   );
   const current = blueprint.layers[layer] ?? {};
+  const currentRotations = blueprint.rotations?.[layer] ?? {};
   const selectedBlock = blocks.find(block => block.id === selected);
   const recentBlockOptions = recentBlocks
     .filter(id => id !== selected)
@@ -209,16 +218,23 @@ export default function Home() {
     const bounds = selectionBounds();
     if (!bounds) return null;
     const cells: Record<string, string> = {};
+    const rotations: Record<string, number> = {};
     for (let y = bounds.top; y <= bounds.bottom; y++) {
       for (let x = bounds.left; x <= bounds.right; x++) {
         const block = current[y * blueprint.width + x];
-        if (block) cells[(y - bounds.top) * (bounds.right - bounds.left + 1) + (x - bounds.left)] = block;
+        if (block) {
+          const offset = (y - bounds.top) * (bounds.right - bounds.left + 1) + (x - bounds.left);
+          cells[offset] = block;
+          const rotation = currentRotations[y * blueprint.width + x];
+          if (rotation) rotations[offset] = rotation;
+        }
       }
     }
     const next = {
       width: bounds.right - bounds.left + 1,
       height: bounds.bottom - bounds.top + 1,
       cells,
+      rotations,
     };
     setClipboard(next);
     return next;
@@ -236,10 +252,14 @@ export default function Home() {
     checkpoint();
     setBlueprint(previous => {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
       for (let y = bounds.top; y <= bounds.bottom; y++) {
-        for (let x = bounds.left; x <= bounds.right; x++) delete layers[layer][y * previous.width + x];
+        for (let x = bounds.left; x <= bounds.right; x++) {
+          delete layers[layer][y * previous.width + x];
+          delete rotations[layer][y * previous.width + x];
+        }
       }
-      return { ...previous, layers };
+      return { ...previous, layers, rotations };
     });
   }
 
@@ -251,13 +271,20 @@ export default function Home() {
     checkpoint();
     setBlueprint(previous => {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
       for (const [offset, block] of Object.entries(clipboard.cells)) {
         const value = Number(offset);
         const x = anchorX + value % clipboard.width;
         const y = anchorY + Math.floor(value / clipboard.width);
-        if (x < previous.width && y < previous.depth) layers[layer][y * previous.width + x] = block;
+        if (x < previous.width && y < previous.depth) {
+          const destination = y * previous.width + x;
+          layers[layer][destination] = block;
+          const rotation = clipboard.rotations[offset];
+          if (rotation) rotations[layer][destination] = rotation;
+          else delete rotations[layer][destination];
+        }
       }
-      return { ...previous, layers };
+      return { ...previous, layers, rotations };
     });
     const endX = Math.min(blueprint.width - 1, anchorX + clipboard.width - 1);
     const endY = Math.min(blueprint.depth - 1, anchorY + clipboard.height - 1);
@@ -291,8 +318,13 @@ export default function Home() {
     checkpoint();
     setBlueprint(previous => {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
-      indices.forEach(index => { layers[layer][index] = selected; });
-      return { ...previous, layers };
+      const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
+      indices.forEach(index => {
+        layers[layer][index] = selected;
+        if (selectedRotation) rotations[layer][index] = selectedRotation;
+        else delete rotations[layer][index];
+      });
+      return { ...previous, layers, rotations };
     });
     lining.current = false;
     lineStart.current = null;
@@ -302,7 +334,7 @@ export default function Home() {
 
   function fillArea(start: number) {
     const target = current[start];
-    if (target === selected) return;
+    if (target === selected && (currentRotations[start] ?? 0) === selectedRotation) return;
     const visited = new Set<number>();
     const queue = [start];
     const matches = (index: number) => current[index] === target;
@@ -321,23 +353,36 @@ export default function Home() {
     checkpoint();
     setBlueprint(previous => {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
-      visited.forEach(index => { layers[layer][index] = selected; });
-      return { ...previous, layers };
+      const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
+      visited.forEach(index => {
+        layers[layer][index] = selected;
+        if (selectedRotation) rotations[layer][index] = selectedRotation;
+        else delete rotations[layer][index];
+      });
+      return { ...previous, layers, rotations };
     });
   }
 
   function paintCell(index: number) {
     setBlueprint(prev => {
       const layers = prev.layers.map((l, i) => i === layer ? { ...l } : l);
-      if (tool === "erase") delete layers[layer][index];
-      else layers[layer][index] = selected;
-      return { ...prev, layers };
+      const rotations = (prev.rotations ?? prev.layers.map<Record<string, number>>(() => ({}))).map((item, i) => i === layer ? { ...item } : item);
+      if (tool === "erase") {
+        delete layers[layer][index];
+        delete rotations[layer][index];
+      } else {
+        layers[layer][index] = selected;
+        if (selectedRotation) rotations[layer][index] = selectedRotation;
+        else delete rotations[layer][index];
+      }
+      return { ...prev, layers, rotations };
     });
   }
 
   function chooseBlock(blockId: string) {
     setRecentBlocks(previous => [blockId, selected, ...previous].filter((id, index, items) => items.indexOf(id) === index).slice(0, 11));
     setSelected(blockId);
+    setSelectedRotation(blocks.find(block => block.id === blockId)?.sourceRotation ?? 0);
     setTool("paint");
   }
 
@@ -345,6 +390,12 @@ export default function Home() {
     const blockId = current[index];
     if (!blockId) return;
     chooseBlock(blockId);
+    setSelectedRotation(currentRotations[index] ?? 0);
+  }
+
+  function rotateSelected() {
+    setSelectedRotation(rotation => (rotation + 90) % 360);
+    setTool("paint");
   }
 
   function changeSize(width: number, depth: number) {
@@ -363,6 +414,16 @@ export default function Home() {
           const x = oldIndex % prev.width;
           const y = Math.floor(oldIndex / prev.width);
           if (x < width && y < depth) resized[y * width + x] = block;
+        }
+        return resized;
+      }),
+      rotations:(prev.rotations ?? prev.layers.map<Record<string, number>>(() => ({}))).map(previousRotations => {
+        const resized: Record<string, number> = {};
+        for (const [key, rotation] of Object.entries(previousRotations)) {
+          const oldIndex = Number(key);
+          const x = oldIndex % prev.width;
+          const y = Math.floor(oldIndex / prev.width);
+          if (x < width && y < depth) resized[y * width + x] = rotation;
         }
         return resized;
       }),
@@ -395,7 +456,9 @@ export default function Home() {
     setBlueprint(prev => {
       const layers = [...prev.layers];
       layers.splice(layer + 1, 0, copy ? { ...layers[layer] } : {});
-      return { ...prev, layers };
+      const rotations = [...(prev.rotations ?? prev.layers.map<Record<string, number>>(() => ({})))];
+      rotations.splice(layer + 1, 0, copy ? { ...rotations[layer] } : {});
+      return { ...prev, layers, rotations };
     });
     setLayer(layer + 1);
   }
@@ -403,7 +466,11 @@ export default function Home() {
   function deleteLayer() {
     if (blueprint.layers.length === 1) return;
     checkpoint();
-    setBlueprint(prev => ({ ...prev, layers: prev.layers.filter((_, i) => i !== layer) }));
+    setBlueprint(prev => ({
+      ...prev,
+      layers:prev.layers.filter((_, i) => i !== layer),
+      rotations:(prev.rotations ?? prev.layers.map<Record<string, number>>(() => ({}))).filter((_, i) => i !== layer),
+    }));
     setLayer(Math.max(0, layer - 1));
   }
 
@@ -434,6 +501,7 @@ export default function Home() {
     setClipboard(null);
     setLinePreview([]);
     setSelected(baseBlocks[0]?.id ?? "oak");
+    setSelectedRotation(0);
     setTool("paint");
     painting.current = false;
     selecting.current = false;
@@ -463,7 +531,7 @@ export default function Home() {
     return new Map(entries.filter((entry): entry is [string, HTMLImageElement] => Boolean(entry[1])));
   }
 
-  function drawLayer(ctx: CanvasRenderingContext2D, layerData: Record<string, string>, x: number, y: number, width: number, height: number, images: Map<string, HTMLImageElement>) {
+  function drawLayer(ctx: CanvasRenderingContext2D, layerData: Record<string, string>, rotationData: Record<string, number>, x: number, y: number, width: number, height: number, images: Map<string, HTMLImageElement>) {
     const cell = Math.min(width / blueprint.width, height / blueprint.depth);
     const gridWidth = cell * blueprint.width;
     const gridHeight = cell * blueprint.depth;
@@ -477,7 +545,14 @@ export default function Home() {
       const cellX = originX + (index % blueprint.width) * cell;
       const cellY = originY + Math.floor(index / blueprint.width) * cell;
       const image = images.get(id);
-      if (image) ctx.drawImage(image, cellX, cellY, cell, cell);
+      if (image) {
+        const rotation = rotationData[index] ?? 0;
+        ctx.save();
+        ctx.translate(cellX + cell / 2, cellY + cell / 2);
+        ctx.rotate(rotation * Math.PI / 180);
+        ctx.drawImage(image, -cell / 2, -cell / 2, cell, cell);
+        ctx.restore();
+      }
       else {
         ctx.fillStyle = block?.color ?? "#8b8f87";
         ctx.fillRect(cellX, cellY, cell, cell);
@@ -537,7 +612,7 @@ export default function Home() {
         ctx.fillStyle = "#6e756b";
         ctx.font = "16px Arial, sans-serif";
         ctx.fillText(`${Object.keys(layerData).length} blocks`, x + 22, y + 58);
-        drawLayer(ctx, layerData, x + 22, y + 78, panelWidth - 44, panelHeight - 100, images);
+        drawLayer(ctx, layerData, blueprint.rotations?.[index] ?? {}, x + 22, y + 78, panelWidth - 44, panelHeight - 100, images);
       });
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png"));
       if (blob) downloadBlob(blob, `${fileStem()}-all-layers.png`);
@@ -570,7 +645,7 @@ export default function Home() {
         ctx.fillStyle = "#6e756b";
         ctx.font = "20px Arial, sans-serif";
         ctx.fillText(`${blueprint.width} x ${blueprint.depth} blocks`, 70, 144);
-        drawLayer(ctx, layerData, 70, 180, 1050, 920, images);
+        drawLayer(ctx, layerData, blueprint.rotations?.[index] ?? {}, 70, 180, 1050, 920, images);
 
         const materials = layerMaterials(layerData);
         ctx.fillStyle = "#fffef9";
@@ -616,7 +691,8 @@ export default function Home() {
   }
 
   function minecraftNameForBlock(blockId: string) {
-    if (blockId.startsWith("mcstructure:")) return `minecraft:${blockId.slice("mcstructure:".length).replace(/^minecraft:/, "")}`;
+    const knownBlock = blocks.find(block => block.id === blockId);
+    if (knownBlock?.minecraftName) return knownBlock.minecraftName;
     let localName = blockId.replace(/^[^:]+:/, "");
     const aliases: Record<string, string> = {
       planks: "oak_planks",
@@ -632,6 +708,31 @@ export default function Home() {
     return `minecraft:${localName || "stone"}`;
   }
 
+  function rotatedMinecraftStates(blockId: string, rotation: number) {
+    const block = blocks.find(item => item.id === blockId);
+    const states = { ...(block?.minecraftStates ?? {}) };
+    const sourceRotation = block?.sourceRotation ?? 0;
+    const steps = ((rotation - sourceRotation + 360) % 360) / 90;
+    const cardinals = ["north", "east", "south", "west"];
+    if (typeof states.cardinal_direction === "string") {
+      const start = cardinals.indexOf(states.cardinal_direction.toLowerCase());
+      if (start >= 0) states.cardinal_direction = cardinals[(start + steps) % 4];
+    }
+    if (typeof states.minecraft_cardinal_direction === "string") {
+      const start = cardinals.indexOf(states.minecraft_cardinal_direction.toLowerCase());
+      if (start >= 0) states.minecraft_cardinal_direction = cardinals[(start + steps) % 4];
+    }
+    if (typeof states.facing_direction === "number" && [2, 5, 3, 4].includes(states.facing_direction)) {
+      const facings = [2, 5, 3, 4];
+      states.facing_direction = facings[(facings.indexOf(states.facing_direction) + steps) % 4];
+    }
+    const axisKey = "pillar_axis" in states ? "pillar_axis" : "axis" in states ? "axis" : null;
+    if (axisKey && steps % 2 === 1 && (states[axisKey] === "x" || states[axisKey] === "z")) {
+      states[axisKey] = states[axisKey] === "x" ? "z" : "x";
+    }
+    return Object.fromEntries(Object.entries(states).map(([key, value]) => [key, typeof value === "number" ? new Int32(value) : value]));
+  }
+
   function typedNbtList<T>(values: T[], type: TAG) {
     Object.defineProperty(values, TAG_TYPE, { value:type, enumerable:false });
     return values;
@@ -640,22 +741,26 @@ export default function Home() {
   async function exportMcstructure() {
     setExporting("mcstructure");
     try {
-      const paletteNames = ["minecraft:air"];
-      const paletteByName = new Map<string, number>([["minecraft:air", 0]]);
-      const paletteByBlock = new Map<string, number>();
-      for (const layerData of blueprint.layers) {
-        for (const blockId of Object.values(layerData)) {
-          if (paletteByBlock.has(blockId)) continue;
+      const paletteEntries: { name: string; states: Record<string, unknown> }[] = [{ name:"minecraft:air", states:{} }];
+      const paletteBySignature = new Map<string, number>([["minecraft:air|{}", 0]]);
+      const paletteByVariant = new Map<string, number>();
+      blueprint.layers.forEach((layerData, layerIndex) => {
+        for (const [cellIndex, blockId] of Object.entries(layerData)) {
+          const rotation = blueprint.rotations?.[layerIndex]?.[cellIndex] ?? 0;
+          const variantKey = `${blockId}@${rotation}`;
+          if (paletteByVariant.has(variantKey)) continue;
           const minecraftName = minecraftNameForBlock(blockId);
-          let paletteIndex = paletteByName.get(minecraftName);
+          const states = rotatedMinecraftStates(blockId, rotation);
+          const signature = `${minecraftName}|${JSON.stringify(states, (_, value) => value instanceof Number ? value.valueOf() : value)}`;
+          let paletteIndex = paletteBySignature.get(signature);
           if (paletteIndex === undefined) {
-            paletteIndex = paletteNames.length;
-            paletteNames.push(minecraftName);
-            paletteByName.set(minecraftName, paletteIndex);
+            paletteIndex = paletteEntries.length;
+            paletteEntries.push({ name:minecraftName, states });
+            paletteBySignature.set(signature, paletteIndex);
           }
-          paletteByBlock.set(blockId, paletteIndex);
+          paletteByVariant.set(variantKey, paletteIndex);
         }
-      }
+      });
 
       const primary: Int32[] = [];
       const secondary: Int32[] = [];
@@ -663,7 +768,9 @@ export default function Home() {
         for (let y = 0; y < blueprint.layers.length; y++) {
           for (let z = 0; z < blueprint.depth; z++) {
             const blockId = blueprint.layers[y][z * blueprint.width + x];
-            primary.push(new Int32(blockId ? (paletteByBlock.get(blockId) ?? 0) : 0));
+            const cellIndex = z * blueprint.width + x;
+            const rotation = blueprint.rotations?.[y]?.[cellIndex] ?? 0;
+            primary.push(new Int32(blockId ? (paletteByVariant.get(`${blockId}@${rotation}`) ?? 0) : 0));
             secondary.push(new Int32(-1));
           }
         }
@@ -682,9 +789,9 @@ export default function Home() {
           entities,
           palette:{
             default:{
-              block_palette:paletteNames.map(name => ({
-                name,
-                states:{},
+              block_palette:paletteEntries.map(entry => ({
+                name:entry.name,
+                states:entry.states,
                 version:new Int32(18168865),
               })),
               block_position_data:{},
@@ -705,7 +812,31 @@ export default function Home() {
     }
   }
 
-  function textureForStructureBlock(localName: string) {
+  function normalizeNbtStates(value: unknown) {
+    const states: Record<string, string | number | boolean> = {};
+    if (!value || typeof value !== "object") return states;
+    for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+      const primitive = raw && typeof raw === "object" && "valueOf" in raw ? raw.valueOf() : raw;
+      if (typeof primitive === "string" || typeof primitive === "number" || typeof primitive === "boolean") states[key] = primitive;
+    }
+    return states;
+  }
+
+  function rotationFromStates(states: Record<string, string | number | boolean>) {
+    const cardinal = String(states.cardinal_direction ?? states.minecraft_cardinal_direction ?? "").toLowerCase();
+    const cardinalRotations: Record<string, number> = { north:0, east:90, south:180, west:270 };
+    if (cardinal in cardinalRotations) return cardinalRotations[cardinal];
+    const facing = Number(states.facing_direction);
+    if (Number.isFinite(facing)) return ({ 2:0, 5:90, 3:180, 4:270 } as Record<number, number>)[facing] ?? 0;
+    const axis = String(states.pillar_axis ?? states.axis ?? "").toLowerCase();
+    if (axis === "x") return 90;
+    return 0;
+  }
+
+  function textureForStructureBlock(localName: string, states: Record<string, string | number | boolean> = {}) {
+    const woodType = String(states.wood_type ?? states.old_log_type ?? states.new_log_type ?? "");
+    if ((localName === "log" || localName === "log2") && woodType) localName = `${woodType}_log`;
+    const axis = String(states.pillar_axis ?? states.axis ?? "").toLowerCase();
     const aliases: Record<string, string[]> = {
       air: [],
       cave_air: [],
@@ -716,7 +847,12 @@ export default function Home() {
       oak_log: ["oak_log_side", "log_oak"],
       oak_wood: ["oak_log_side", "log_oak"],
     };
-    const candidates = [localName, ...(aliases[localName] ?? [])];
+    const directionalCandidates = axis === "y"
+      ? [`${localName}_top`, localName.replace(/_log$/, "_log_top")]
+      : axis === "x" || axis === "z"
+        ? [`${localName}_side`, localName.replace(/_log$/, "_log_side")]
+        : [`${localName}_front`, `${localName}_side`, localName];
+    const candidates = [...directionalCandidates, ...(aliases[localName] ?? [])];
     for (const candidate of candidates) {
       const exact = baseBlocks.find(block => block.id === `bedrock:${candidate}`);
       if (exact) return exact;
@@ -763,13 +899,18 @@ export default function Home() {
     const width = Math.min(128, sizeX);
     const depth = Math.min(128, sizeZ);
     const customBlocks = new Map<string, Block>();
-    const paletteIds = palette.map(entry => {
+    const paletteRotations: number[] = [];
+    const paletteIds = palette.map((entry, paletteIndex) => {
       const fullName = String(entry.name ?? "");
       const localName = fullName.replace(/^minecraft:/, "");
+      const states = normalizeNbtStates(entry.states);
       if (["air", "cave_air", "void_air", "structure_void"].includes(localName)) return null;
-      const id = `mcstructure:${localName}`;
+      const sourceRotation = rotationFromStates(states);
+      paletteRotations[paletteIndex] = sourceRotation;
+      const stateKey = Object.entries(states).sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}=${value}`).join(",");
+      const id = `mcstructure:${localName}:${stateKey || "default"}`;
       if (!customBlocks.has(id)) {
-        const texture = textureForStructureBlock(localName);
+        const texture = textureForStructureBlock(localName, states);
         customBlocks.set(id, {
           id,
           name: localName.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
@@ -777,6 +918,9 @@ export default function Home() {
           color: texture?.color ?? fallbackBlockColor(localName),
           texture: texture?.texture,
           textureUrl: texture?.textureUrl,
+          minecraftName:fullName.startsWith("minecraft:") ? fullName : `minecraft:${localName}`,
+          minecraftStates:states,
+          sourceRotation,
         });
       }
       return id;
@@ -787,15 +931,22 @@ export default function Home() {
     const expected = sizeX * sizeY * sizeZ;
     if (primary.length < expected) throw new Error("The structure block data is incomplete.");
     const layers: Record<string, string>[] = Array.from({ length:sizeY }, () => ({}));
+    const rotations: Record<string, number>[] = Array.from({ length:sizeY }, () => ({}));
     for (let index = 0; index < expected; index++) {
       const x = Math.floor(index / (sizeZ * sizeY));
       const y = Math.floor(index / sizeZ) % sizeY;
       const z = index % sizeZ;
       if (x >= width || z >= depth) continue;
+      const paletteIndex = primary[index] >= 0 && paletteIds[primary[index]] ? primary[index] : secondary[index];
       const primaryId = primary[index] >= 0 ? paletteIds[primary[index]] : null;
       const secondaryId = secondary[index] >= 0 ? paletteIds[secondary[index]] : null;
       const blockId = primaryId ?? secondaryId;
-      if (blockId) layers[y][z * width + x] = blockId;
+      if (blockId) {
+        const destination = z * width + x;
+        layers[y][destination] = blockId;
+        const rotation = paletteRotations[paletteIndex] ?? 0;
+        if (rotation) rotations[y][destination] = rotation;
+      }
     }
 
     checkpoint();
@@ -805,6 +956,7 @@ export default function Home() {
       width,
       depth,
       layers,
+      rotations,
       customBlocks:[...customBlocks.values()],
     });
     setLayer(0);
@@ -813,6 +965,7 @@ export default function Home() {
     const firstImportedBlock = customBlocks.values().next().value as Block | undefined;
     if (firstImportedBlock) {
       setSelected(firstImportedBlock.id);
+      setSelectedRotation(firstImportedBlock.sourceRotation ?? 0);
       setTool("paint");
     }
     const cropped = sizeX > 128 || sizeZ > 128;
@@ -893,6 +1046,7 @@ export default function Home() {
                 <button className={tool === "line" ? "active" : ""} onClick={() => setTool("line")}>Line</button>
                 <button className={tool === "fill" ? "active" : ""} onClick={() => setTool("fill")}>Fill</button>
                 <button className={tool === "picker" ? "active" : ""} onClick={() => setTool("picker")} title="Pick a block (Alt+click)">Picker</button>
+                <button onClick={rotateSelected} title="Rotate selected texture 90° (R)">Rotate {selectedRotation}°</button>
                 <button className={tool === "select" ? "active" : ""} onClick={() => setTool("select")}>Select</button>
               </div>
               <div className="edit-group" aria-label="Edit selection">
@@ -910,7 +1064,8 @@ export default function Home() {
                 <span className="history-swatch" style={{
                   backgroundColor:selectedBlock.color,
                   backgroundImage:selectedBlock.textureUrl ? `url(${selectedBlock.textureUrl})` : selectedBlock.texture,
-                  backgroundSize:selectedBlock.textureUrl ? "cover" : undefined
+                  backgroundSize:selectedBlock.textureUrl ? "cover" : undefined,
+                  transform:`rotate(${selectedRotation}deg)`
                 }} />
                 <span>{selectedBlock.name}</span>
               </button>}
@@ -945,18 +1100,20 @@ export default function Home() {
               }}>
               {Array.from({ length: blueprint.width * blueprint.depth }, (_, index) => {
                 const currentBlock = blocks.find(b => b.id === current[index]);
-                const lowerBlockId = !currentBlock && showPreviousLayers && layer > 0
-                  ? blueprint.layers.slice(0, layer).reverse().find(layerData => layerData[index])?.[index]
-                  : undefined;
+                let lowerLayerIndex = -1;
+                if (!currentBlock && showPreviousLayers && layer > 0) {
+                  for (let candidate = layer - 1; candidate >= 0; candidate--) {
+                    if (blueprint.layers[candidate][index]) { lowerLayerIndex = candidate; break; }
+                  }
+                }
+                const lowerBlockId = lowerLayerIndex >= 0 ? blueprint.layers[lowerLayerIndex][index] : undefined;
                 const lowerBlock = lowerBlockId ? blocks.find(b => b.id === lowerBlockId) : undefined;
                 const displayBlock = currentBlock ?? lowerBlock;
+                const displayRotation = currentBlock
+                  ? currentRotations[index] ?? 0
+                  : lowerLayerIndex >= 0 ? blueprint.rotations?.[lowerLayerIndex]?.[index] ?? 0 : 0;
                 return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentBlock ? `, ${currentBlock.name}` : lowerBlock ? `, ${lowerBlock.name} from lower layer` : ", empty"}`}
                   className={`cell ${currentBlock ? "filled" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
-                  style={displayBlock ? {
-                    backgroundColor:displayBlock.color,
-                    backgroundImage:displayBlock.textureUrl ? `url(${displayBlock.textureUrl})` : displayBlock.texture,
-                    backgroundSize:displayBlock.textureUrl ? "cover" : undefined
-                  } : undefined}
                   onPointerDown={e => {
                     e.preventDefault();
                     if (e.altKey || tool === "picker") {
@@ -984,7 +1141,14 @@ export default function Home() {
                       lineEnd.current = index;
                       setLinePreview(lineIndices(lineStart.current, index));
                     } else if (painting.current) paintCell(index);
-                  }} />;
+                  }}>
+                  {displayBlock && <span className="cell-surface" style={{
+                    backgroundColor:displayBlock.color,
+                    backgroundImage:displayBlock.textureUrl ? `url(${displayBlock.textureUrl})` : displayBlock.texture,
+                    backgroundSize:displayBlock.textureUrl ? "cover" : undefined,
+                    transform:`rotate(${displayRotation}deg)`
+                  }} />}
+                </button>;
               })}
             </div>
           </div>
