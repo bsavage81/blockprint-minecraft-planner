@@ -625,7 +625,11 @@ export default function Home() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-cube" aria-hidden="true" />
+          <span className="brand-mark" aria-hidden="true">
+            <span className="mark-top" />
+            <span className="mark-left" />
+            <span className="mark-right" />
+          </span>
           <div><strong>Blockprint</strong><span>Minecraft build planner</span></div>
         </div>
         <input className="project-name" aria-label="Blueprint name" value={blueprint.name}

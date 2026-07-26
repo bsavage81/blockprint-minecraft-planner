@@ -14,7 +14,11 @@ button:disabled { cursor:not-allowed; opacity:.35; }
 .app-shell { min-height:100vh; display:flex; flex-direction:column; }
 .topbar { min-height:74px; display:grid; grid-template-columns:280px minmax(220px,1fr) auto; align-items:center; gap:20px; padding:12px 22px; background:var(--panel); border-bottom:1px solid var(--line); }
 .brand { display:flex; align-items:center; gap:11px; }
-.brand-cube { width:34px; height:34px; background:linear-gradient(135deg,#5c8b65 0 50%,#315f46 50%); box-shadow:inset 0 0 0 2px #21422f; transform:rotate(2deg); }
+.brand-mark { position:relative; display:block; width:45px; height:44px; flex:0 0 45px; filter:drop-shadow(0 3px 2px rgba(28,56,40,.2)); }
+.brand-mark > span { position:absolute; display:block; }
+.mark-top { inset:0 0 50% 0; clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%); background-color:#6f9a73; background-image:linear-gradient(30deg,transparent 47%,rgba(255,255,255,.16) 48% 52%,transparent 53%),linear-gradient(-30deg,transparent 47%,rgba(28,66,46,.2) 48% 52%,transparent 53%); }
+.mark-left { inset:25% 50% 0 0; clip-path:polygon(0 0,100% 33.333%,100% 100%,0 66.667%); background-color:#39694d; background-image:repeating-linear-gradient(0deg,transparent 0 10px,rgba(20,51,35,.22) 10px 11px),repeating-linear-gradient(90deg,transparent 0 10px,rgba(20,51,35,.18) 10px 11px); }
+.mark-right { inset:25% 0 0 50%; clip-path:polygon(0 33.333%,100% 0,100% 66.667%,0 100%); background-color:#244b36; background-image:repeating-linear-gradient(0deg,transparent 0 10px,rgba(12,36,24,.28) 10px 11px),repeating-linear-gradient(90deg,transparent 0 10px,rgba(12,36,24,.2) 10px 11px); }
 .brand div { display:flex; flex-direction:column; }
 .brand strong { font-family:Georgia,serif; font-size:20px; letter-spacing:.01em; }
 .brand span { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; }
