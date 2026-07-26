@@ -6,8 +6,9 @@ type Block = {
   id: string;
   name: string;
   category: string;
-  color: string;
-  texture: string;
+  color?: string;
+  texture?: string;
+  textureUrl?: string;
 };
 
 type Blueprint = {
@@ -42,6 +43,7 @@ const SIZE_PRESETS = [[16,16], [24,24], [30,30], [32,32]];
 const EMPTY_BLUEPRINT: Blueprint = { name: "Sears No. 144", width: 30, depth: 30, layers: [{}] };
 
 export default function Home() {
+  const [blocks, setBlocks] = useState<Block[]>(BLOCKS);
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
@@ -59,11 +61,23 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    fetch("/bedrock-blocks.json")
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(data => {
+        if (Array.isArray(data.blocks) && data.blocks.length) {
+          setBlocks(data.blocks);
+          setSelected(data.blocks[0].id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem("blockprint-blueprint", JSON.stringify(blueprint));
   }, [blueprint]);
 
-  const categories = ["All", ...Array.from(new Set(BLOCKS.map(b => b.category)))];
-  const visibleBlocks = BLOCKS.filter(b =>
+  const categories = ["All", ...Array.from(new Set(blocks.map(b => b.category)))];
+  const visibleBlocks = blocks.filter(b =>
     (category === "All" || b.category === category) &&
     b.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -140,7 +154,7 @@ export default function Home() {
 
       <section className="workspace">
         <aside className="palette-panel">
-          <div className="panel-heading"><div><span className="eyebrow">Resources</span><h2>Block palette</h2></div><span className="count">{BLOCKS.length}</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">Bedrock samples</span><h2>Block palette</h2></div><span className="count">{blocks.length}</span></div>
           <input className="search" placeholder="Search blocks…" value={search} onChange={e => setSearch(e.target.value)} />
           <div className="category-tabs">
             {categories.map(c => <button key={c} className={category === c ? "active" : ""} onClick={() => setCategory(c)}>{c}</button>)}
@@ -149,7 +163,11 @@ export default function Home() {
             {visibleBlocks.map(block => (
               <button key={block.id} className={`block-option ${selected === block.id && tool === "paint" ? "selected" : ""}`}
                 onClick={() => { setSelected(block.id); setTool("paint"); }}>
-                <span className="block-swatch" style={{ backgroundColor:block.color, backgroundImage:block.texture }} />
+                <span className="block-swatch" style={{
+                  backgroundColor:block.color,
+                  backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
+                  backgroundSize:block.textureUrl ? "cover" : undefined
+                }} />
                 <span><strong>{block.name}</strong><small>{block.category}</small></span>
               </button>
             ))}
@@ -175,10 +193,14 @@ export default function Home() {
               onPointerLeave={() => { painting.current = false; }}
               onPointerUp={() => { painting.current = false; }}>
               {Array.from({ length: blueprint.width * blueprint.depth }, (_, index) => {
-                const block = BLOCKS.find(b => b.id === current[index]);
+                const block = blocks.find(b => b.id === current[index]);
                 return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${block ? `, ${block.name}` : ", empty"}`}
                   className={`cell ${block ? "filled" : ""}`}
-                  style={block ? { backgroundColor:block.color, backgroundImage:block.texture } : undefined}
+                  style={block ? {
+                    backgroundColor:block.color,
+                    backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
+                    backgroundSize:block.textureUrl ? "cover" : undefined
+                  } : undefined}
                   onPointerDown={e => { e.preventDefault(); painting.current = true; paintCell(index); }}
                   onPointerEnter={() => { if (painting.current) paintCell(index); }} />;
               })}
@@ -209,8 +231,13 @@ export default function Home() {
             <div className="panel-heading"><div><span className="eyebrow">Automatic</span><h2>Material list</h2></div><span className="count">{materialCounts.reduce((n,[,v]) => n + v, 0)}</span></div>
             {materialCounts.length === 0 ? <p className="empty-state">Paint blocks on the grid to start a materials list.</p> :
               <ol>{materialCounts.map(([id, amount]) => {
-                const block = BLOCKS.find(b => b.id === id)!;
-                return <li key={id}><span className="mini-swatch" style={{ backgroundColor:block.color, backgroundImage:block.texture }}/><span>{block.name}</span><strong>{amount}</strong></li>;
+                const block = blocks.find(b => b.id === id);
+                if (!block) return null;
+                return <li key={id}><span className="mini-swatch" style={{
+                  backgroundColor:block.color,
+                  backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
+                  backgroundSize:block.textureUrl ? "cover" : undefined
+                }}/><span>{block.name}</span><strong>{amount}</strong></li>;
               })}</ol>}
           </section>
           <section className="quick-tips">
