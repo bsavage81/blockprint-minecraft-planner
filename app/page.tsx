@@ -54,6 +54,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
+  const [showPreviousLayers, setShowPreviousLayers] = useState(false);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const [history, setHistory] = useState<Blueprint[]>([]);
@@ -669,6 +670,9 @@ export default function Home() {
             </div>
             <div className="view-controls">
               <label className="grid-toggle"><input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} /> Grid</label>
+              <label className="grid-toggle previous-toggle" title={layer === 0 ? "Available from Layer 2 onward" : "Show blocks from lower layers at 50% opacity"}>
+                <input type="checkbox" disabled={layer === 0} checked={showPreviousLayers && layer > 0} onChange={e => setShowPreviousLayers(e.target.checked)} /> Below 50%
+              </label>
               <div className="zoom-controls" aria-label="Canvas zoom">
                 <button onClick={() => setZoom(value => Math.max(4, value - 2))} disabled={zoom <= 4} title="Zoom out (Ctrl+-)">−</button>
                 <input type="range" min="4" max="40" step="1" value={zoom} onChange={event => setZoom(Number(event.target.value))} aria-label="Zoom level" />
@@ -717,13 +721,18 @@ export default function Home() {
                 selecting.current = false;
               }}>
               {Array.from({ length: blueprint.width * blueprint.depth }, (_, index) => {
-                const block = blocks.find(b => b.id === current[index]);
-                return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${block ? `, ${block.name}` : ", empty"}`}
-                  className={`cell ${block ? "filled" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
-                  style={block ? {
-                    backgroundColor:block.color,
-                    backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
-                    backgroundSize:block.textureUrl ? "cover" : undefined
+                const currentBlock = blocks.find(b => b.id === current[index]);
+                const lowerBlockId = !currentBlock && showPreviousLayers && layer > 0
+                  ? blueprint.layers.slice(0, layer).reverse().find(layerData => layerData[index])?.[index]
+                  : undefined;
+                const lowerBlock = lowerBlockId ? blocks.find(b => b.id === lowerBlockId) : undefined;
+                const displayBlock = currentBlock ?? lowerBlock;
+                return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentBlock ? `, ${currentBlock.name}` : lowerBlock ? `, ${lowerBlock.name} from lower layer` : ", empty"}`}
+                  className={`cell ${currentBlock ? "filled" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
+                  style={displayBlock ? {
+                    backgroundColor:displayBlock.color,
+                    backgroundImage:displayBlock.textureUrl ? `url(${displayBlock.textureUrl})` : displayBlock.texture,
+                    backgroundSize:displayBlock.textureUrl ? "cover" : undefined
                   } : undefined}
                   onPointerDown={e => {
                     e.preventDefault();
