@@ -66,10 +66,23 @@ function plainNbt(value: unknown): unknown {
 
 function editableNbt(value: unknown): unknown {
   if (Array.isArray(value)) {
+    if (value.length && value.every(child => typeof child === "number")) {
+      const usesFloat = value.some(child => !Number.isInteger(child));
+      return typedNbtList(
+        value.map(child => usesFloat ? new Float32(child as number) : new Int32(child as number)),
+        usesFloat ? TAG.FLOAT : TAG.INT,
+      );
+    }
     const result = value.map(editableNbt);
     if (result.length) {
-      const first = result[0];
-      const type = typeof first === "string" ? TAG.STRING : typeof first === "number" ? TAG.INT : TAG.COMPOUND;
+      const first = value[0];
+      const type = typeof first === "string"
+        ? TAG.STRING
+        : typeof first === "boolean"
+            ? TAG.BYTE
+            : Array.isArray(first)
+              ? TAG.LIST
+              : TAG.COMPOUND;
       return typedNbtList(result, type);
     }
     return typedNbtList(result, TAG.COMPOUND);
@@ -77,7 +90,9 @@ function editableNbt(value: unknown): unknown {
   if (value && typeof value === "object") {
     return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, child]) => [key, editableNbt(child)]));
   }
-  return typeof value === "number" ? new Int32(value) : value;
+  return typeof value === "number"
+    ? Number.isInteger(value) ? new Int32(value) : new Float32(value)
+    : value;
 }
 
 function positionIndex(width: number, height: number, depth: number, layer: number, cell: number) {

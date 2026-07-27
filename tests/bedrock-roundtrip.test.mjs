@@ -144,7 +144,13 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         y:0,
         z:0.5,
         rotation:[90, 0],
-        nbt:{ CustomName:"Blueprint Pig", Persistent:1 },
+        nbt:{
+          CustomName:"Blueprint Pig",
+          Persistent:1,
+          Motion:[0.25, 0, -0.5],
+          Flags:[true, false],
+          Scores:[7, 11],
+        },
       },
       {
         identifier:"minecraft:item",
@@ -158,7 +164,9 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   };
   const binary = await encodeMcstructure(source);
   const decoded = await decodeMcstructure(binary);
-  assert.deepEqual(decoded, source);
+  const expected = structuredClone(source);
+  expected.entities[0].nbt.Flags = [1, 0];
+  assert.deepEqual(decoded, expected);
 
   const parsed = await readNbt(binary, { endian:"little", compression:null });
   const origin = [-427, 64, 307];
@@ -169,7 +177,7 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   const absoluteBinary = await writeNbt(parsed.data, { endian:"little", compression:null, rootName:"" });
   assert.deepEqual(
     await decodeMcstructure(absoluteBinary),
-    source,
+    expected,
     "absolute entity positions are normalized by structure_world_origin",
   );
 });
