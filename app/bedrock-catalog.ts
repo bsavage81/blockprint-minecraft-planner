@@ -152,3 +152,38 @@ export function variantId(minecraftName: string, states: Record<string, BlockSta
     .map(([key, value]) => `${key}=${String(value)}`).join(",");
   return `${minecraftName}[${stateKey}]`;
 }
+
+export function statesEqual(
+  left: Record<string, BlockStateValue> = {},
+  right: Record<string, BlockStateValue> = {},
+) {
+  const leftEntries = Object.entries(left).sort(([a], [b]) => a.localeCompare(b));
+  const rightEntries = Object.entries(right).sort(([a], [b]) => a.localeCompare(b));
+  return JSON.stringify(leftEntries) === JSON.stringify(rightEntries);
+}
+
+export function catalogNameForImportedBlock(
+  minecraftName: string,
+  states: Record<string, BlockStateValue> = {},
+) {
+  const localName = minecraftName.replace(/^minecraft:/, "");
+  const woodType = String(states.wood_type ?? states.old_log_type ?? states.new_log_type ?? "");
+  const color = String(states.color ?? "");
+  if ((localName === "log" || localName === "log2") && woodType) return `minecraft:${woodType}_log`;
+  if (localName === "planks" && woodType) return `minecraft:${woodType}_planks`;
+  if (["wool", "carpet", "concrete", "concrete_powder", "stained_glass"].includes(localName) && color) {
+    return `minecraft:${color}_${localName}`;
+  }
+  const stoneType = String(states.stone_type ?? "");
+  if (localName === "stone" && stoneType && stoneType !== "stone") return `minecraft:${stoneType}`;
+  return minecraftName.startsWith("minecraft:") ? minecraftName : `minecraft:${localName}`;
+}
+
+export function matchCatalogBlock(
+  catalog: CatalogBlock[],
+  minecraftName: string,
+  states: Record<string, BlockStateValue> = {},
+) {
+  const catalogName = catalogNameForImportedBlock(minecraftName, states);
+  return catalog.find(block => !block.legacyAlias && block.minecraftName === catalogName);
+}

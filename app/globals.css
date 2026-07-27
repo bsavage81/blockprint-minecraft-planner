@@ -121,6 +121,10 @@ h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .block-identifier { display:block; margin-top:10px; padding:7px 8px; overflow-wrap:anywhere; border:1px solid var(--line); border-radius:4px; background:#f5f5ef; color:var(--green-2); font-size:10px; }
 .state-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 8px; }
 .state-controls .field { margin-top:10px; }
+.palette-block-state { margin-top:14px; padding:13px 0 14px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.palette-block-state h2 { overflow-wrap:anywhere; }
+.palette-block-state .empty-state { margin:8px 0 0; }
+.palette-block-state + .search { margin-top:14px; }
 .size-controls { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:end; gap:7px; }
 .size-controls label { display:grid; gap:4px; }
 .size-controls input { font-variant-numeric:tabular-nums; }

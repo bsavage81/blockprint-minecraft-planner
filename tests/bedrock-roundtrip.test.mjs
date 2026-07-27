@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildStateAwareCatalog, textureForFace, variantId } from "../app/bedrock-catalog.ts";
+import {
+  buildStateAwareCatalog,
+  catalogNameForImportedBlock,
+  matchCatalogBlock,
+  statesEqual,
+  textureForFace,
+  variantId,
+} from "../app/bedrock-catalog.ts";
 import { decodeMcstructure, encodeMcstructure } from "../app/mcstructure-codec.ts";
 
 test("builds canonical blocks while retaining legacy texture aliases", () => {
@@ -17,6 +24,26 @@ test("builds canonical blocks while retaining legacy texture aliases", () => {
   assert.ok(legacy.legacyAlias);
   assert.equal(legacy.textureUrl, "top.png", "old project IDs retain their exact texture");
   assert.equal(variantId("minecraft:oak_log", { pillar_axis:"x" }), "minecraft:oak_log[pillar_axis=x]");
+});
+
+test("matches imported palette entries to canonical catalog blocks", () => {
+  const catalog = buildStateAwareCatalog([
+    { id:"bedrock:stone", name:"Stone", category:"Stone", textureUrl:"stone.png" },
+    { id:"bedrock:oak_log_side", name:"Oak Log Side", category:"Wood", textureUrl:"side.png" },
+    { id:"bedrock:oak_log_top", name:"Oak Log Top", category:"Wood", textureUrl:"top.png" },
+  ]);
+  const stone = matchCatalogBlock(catalog, "minecraft:stone", {});
+  assert.equal(stone.id, "minecraft:stone");
+  assert.ok(statesEqual(stone.minecraftStates, {}), "default-state imports reuse the catalog ID");
+
+  assert.equal(catalogNameForImportedBlock("minecraft:log", { old_log_type:"oak" }), "minecraft:oak_log");
+  const legacyLog = matchCatalogBlock(catalog, "minecraft:log", { old_log_type:"oak", pillar_axis:"y" });
+  assert.equal(legacyLog.id, "minecraft:oak_log");
+  assert.equal(
+    variantId("minecraft:log", { old_log_type:"oak", pillar_axis:"y" }),
+    "minecraft:log[old_log_type=oak,pillar_axis=y]",
+    "non-default imported states remain a configured variant for lossless export",
+  );
 });
 
 test("round-trips Bedrock identifiers, states, coordinates, and empty cells", async () => {

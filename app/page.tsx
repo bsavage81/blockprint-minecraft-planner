@@ -5,6 +5,8 @@ import { jsPDF } from "jspdf";
 import { Int32, read as readNbt } from "nbtify";
 import {
   buildStateAwareCatalog,
+  matchCatalogBlock,
+  statesEqual,
   textureForFace,
   variantId,
   type BlockStateDefinition,
@@ -909,7 +911,7 @@ export default function Home() {
     if (![sizeX, sizeY, sizeZ].every(value => Number.isInteger(value) && value > 0)) throw new Error("The structure dimensions are invalid.");
     const width = Math.min(128, sizeX);
     const depth = Math.min(128, sizeZ);
-    const customBlocks = new Map<string, Block>();
+    const importedVariants = new Map<string, Block>();
     const paletteRotations: number[] = [];
     const paletteIds = palette.map((entry, paletteIndex) => {
       const fullName = String(entry.name ?? "");
@@ -918,20 +920,27 @@ export default function Home() {
       if (["air", "cave_air", "void_air", "structure_void"].includes(localName)) return null;
       const sourceRotation = rotationFromStates(states);
       paletteRotations[paletteIndex] = sourceRotation;
-      const stateKey = Object.entries(states).sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}=${value}`).join(",");
-      const id = `mcstructure:${localName}:${stateKey || "default"}`;
-      if (!customBlocks.has(id)) {
-        const texture = textureForStructureBlock(localName, states);
-        customBlocks.set(id, {
+      const minecraftName = fullName.startsWith("minecraft:") ? fullName : `minecraft:${localName}`;
+      const catalogBlock = matchCatalogBlock(baseBlocks, minecraftName, states);
+      if (catalogBlock && catalogBlock.minecraftName === minecraftName && statesEqual(catalogBlock.minecraftStates, states)) {
+        return catalogBlock.id;
+      }
+
+      const id = variantId(minecraftName, states);
+      if (!importedVariants.has(id)) {
+        const texture = catalogBlock ?? textureForStructureBlock(localName, states);
+        importedVariants.set(id, {
+          ...(catalogBlock ?? {}),
           id,
-          name: localName.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-          category: "Imported",
-          color: texture?.color ?? fallbackBlockColor(localName),
-          texture: texture?.texture,
-          textureUrl: texture?.textureUrl,
-          minecraftName:fullName.startsWith("minecraft:") ? fullName : `minecraft:${localName}`,
+          name:catalogBlock?.name ?? localName.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+          category:catalogBlock ? "Configured" : "Unmatched",
+          color:texture?.color ?? fallbackBlockColor(localName),
+          texture:texture?.texture,
+          textureUrl:texture ? textureForFace({ ...texture, minecraftStates:states }, "up") : undefined,
+          minecraftName,
           minecraftStates:states,
           sourceRotation,
+          legacyAlias:false,
         });
       }
       return id;
@@ -968,15 +977,16 @@ export default function Home() {
       depth,
       layers,
       rotations,
-      customBlocks:[...customBlocks.values()],
+      customBlocks:[...importedVariants.values()],
     });
     setLayer(0);
     setSelection(null);
     setClipboard(null);
-    const firstImportedBlock = customBlocks.values().next().value as Block | undefined;
-    if (firstImportedBlock) {
-      setSelected(firstImportedBlock.id);
-      setSelectedRotation(firstImportedBlock.sourceRotation ?? 0);
+    const firstBlockId = layers.flatMap(layerData => Object.values(layerData))[0];
+    const firstBlock = firstBlockId ? [...baseBlocks, ...importedVariants.values()].find(block => block.id === firstBlockId) : undefined;
+    if (firstBlock) {
+      setSelected(firstBlock.id);
+      setSelectedRotation(firstBlock.sourceRotation ?? 0);
       setTool("paint");
     }
     const cropped = sizeX > 128 || sizeZ > 128;
@@ -1029,6 +1039,22 @@ export default function Home() {
         <aside className={`palette-panel ${paletteCollapsed ? "collapsed" : ""}`}>
           <button className="sidebar-toggle palette-toggle" onClick={() => setPaletteCollapsed(value => !value)} aria-label={paletteCollapsed ? "Expand block palette" : "Minimize block palette"} title={paletteCollapsed ? "Expand block palette" : "Minimize block palette"}>{paletteCollapsed ? "›" : "‹"}</button>
           <div className="panel-heading"><div><span className="eyebrow">Bedrock catalog</span><h2>Block palette</h2></div><span className="count">{blocks.filter(block => !block.legacyAlias).length}</span></div>
+          {selectedBlock?.minecraftName && <section className="palette-block-state">
+            <span className="eyebrow">Bedrock block</span><h2>{selectedBlock.name}</h2>
+            <code className="block-identifier">{selectedBlock.minecraftName}</code>
+            {selectedBlock.stateDefinitions?.length ? <div className="state-controls">
+              {selectedBlock.stateDefinitions.map(definition => <label className="field" key={definition.name}>
+                <span>{definition.name}</span>
+                <select value={String(selectedBlock.minecraftStates?.[definition.name] ?? definition.values[0])}
+                  onChange={event => {
+                    const chosen = definition.values.find(value => String(value) === event.target.value) ?? definition.values[0];
+                    setSelectedBlockState(definition.name, chosen);
+                  }}>
+                  {definition.values.map(value => <option key={String(value)} value={String(value)}>{String(value)}</option>)}
+                </select>
+              </label>)}
+            </div> : <p className="empty-state">This block has no editable placement states.</p>}
+          </section>}
           <input className="search" placeholder="Search blocks…" value={search} onChange={e => setSearch(e.target.value)} />
           <div className="category-tabs">
             {categories.map(c => <button key={c} className={category === c ? "active" : ""} onClick={() => setCategory(c)}>{c}</button>)}
@@ -1230,22 +1256,6 @@ export default function Home() {
               </div>
             </div>
           </section>
-          {selectedBlock?.minecraftName && <section className="block-state-panel">
-            <span className="eyebrow">Bedrock block</span><h2>{selectedBlock.name}</h2>
-            <code className="block-identifier">{selectedBlock.minecraftName}</code>
-            {selectedBlock.stateDefinitions?.length ? <div className="state-controls">
-              {selectedBlock.stateDefinitions.map(definition => <label className="field" key={definition.name}>
-                <span>{definition.name}</span>
-                <select value={String(selectedBlock.minecraftStates?.[definition.name] ?? definition.values[0])}
-                  onChange={event => {
-                    const chosen = definition.values.find(value => String(value) === event.target.value) ?? definition.values[0];
-                    setSelectedBlockState(definition.name, chosen);
-                  }}>
-                  {definition.values.map(value => <option key={String(value)} value={String(value)}>{String(value)}</option>)}
-                </select>
-              </label>)}
-            </div> : <p className="empty-state">This block has no editable placement states.</p>}
-          </section>}
           <section>
             <span className="eyebrow">Blueprint</span><h2>Build setup</h2>
             <form className="field" onSubmit={event => { event.preventDefault(); applyCanvasSize(); }}>
