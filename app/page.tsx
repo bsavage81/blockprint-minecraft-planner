@@ -36,6 +36,7 @@ type Block = {
   kind?: "block" | "entity";
   mob?: boolean;
   defaultNbt?: Record<string, unknown>;
+  customAsset?: boolean;
 };
 
 type EntityPlacement = {
@@ -82,6 +83,14 @@ const BLOCKS: Block[] = [
 ];
 
 const EMPTY_BLUEPRINT: Blueprint = { name: "Untitled Blockprint", width: 30, depth: 30, layers: [{}] };
+
+function placeholderImage(label: string, kind: "block" | "entity" = "block") {
+  const initials = label.replace(/^minecraft:/, "").split(/[_:\s-]+/).filter(Boolean).slice(0, 2).map(word => word[0]?.toUpperCase()).join("") || "?";
+  const shape = kind === "entity"
+    ? `<circle cx="32" cy="32" r="25" fill="#5b735f"/><circle cx="24" cy="27" r="3" fill="#f5f1df"/><circle cx="40" cy="27" r="3" fill="#f5f1df"/>`
+    : `<path d="M8 18 32 5l24 13v28L32 59 8 46Z" fill="#6d756c"/><path d="m8 18 24 14 24-14M32 32v27" fill="none" stroke="#f5f1df" stroke-width="2"/>`;
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">${shape}<text x="32" y="43" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#fff">${initials}</text></svg>`)}`;
+}
 
 export default function Home() {
   const [baseBlocks, setBaseBlocks] = useState<Block[]>(BLOCKS);
@@ -717,6 +726,32 @@ export default function Home() {
     if (blocks.find(block => block.id === blockId)?.kind === "entity" || tool !== "replace") setTool("paint");
   }
 
+  async function replaceCustomImage(file?: File) {
+    if (!file || !selectedBlock?.customAsset) return;
+    if (!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type)) {
+      window.alert("Choose a PNG, JPEG, WebP, or GIF image.");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      window.alert("Choose an image smaller than 1 MB so the project can still auto-save in your browser.");
+      return;
+    }
+    const image = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+    checkpoint();
+    setBlueprint(previous => ({
+      ...previous,
+      customBlocks:(previous.customBlocks ?? []).map(block => block.id === selectedBlock.id ? { ...block, textureUrl:image } : block),
+      entities:Object.fromEntries(Object.entries(previous.entities ?? {}).map(([key, entity]) =>
+        [key, entity.identifier === selectedBlock.id ? { ...entity, image } : entity]
+      )),
+    }));
+  }
+
   function setSelectedBlockState(stateName: string, value: string | number | boolean) {
     if (!selectedBlock?.minecraftName) return;
     const minecraftStates = { ...(selectedBlock.minecraftStates ?? {}), [stateName]:value };
@@ -1263,14 +1298,15 @@ export default function Home() {
           ...(catalogBlock ?? {}),
           id,
           name:catalogBlock?.name ?? localName.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-          category:catalogBlock ? "Configured" : "Unmatched",
+          category:catalogBlock?.category ?? "Custom",
           color:texture?.color ?? fallbackBlockColor(localName),
           texture:texture?.texture,
-          textureUrl:texture ? textureForFace({ ...texture, minecraftStates:states }, "up") : undefined,
+          textureUrl:catalogBlock && texture ? textureForFace({ ...texture, minecraftStates:states }, "up") : placeholderImage(minecraftName, "block"),
           minecraftName,
           minecraftStates:states,
           sourceRotation,
           legacyAlias:false,
+          customAsset:!catalogBlock,
         });
       }
       return id;
@@ -1307,16 +1343,31 @@ export default function Home() {
       const z = Math.floor(cell / sizeX);
       return [`${containerLayer}:${z * width + x}`, value];
     }));
+    const importedEntityDefinitions = new Map<string, Block>();
     const entities = Object.fromEntries((decoded.entities ?? []).flatMap(entity => {
       const x = Math.floor(entity.x);
       const entityLayer = Math.floor(entity.y);
       const z = Math.floor(entity.z);
       if (x < 0 || x >= width || entityLayer < 0 || entityLayer >= sizeY || z < 0 || z >= depth) return [];
       const definition = entityCatalog.find(candidate => candidate.id === entity.identifier);
+      const entityName = definition?.name ?? entity.identifier.replace(/^minecraft:/, "").split("_").map(word => word[0]?.toUpperCase() + word.slice(1)).join(" ");
+      const image = definition?.textureUrl ?? placeholderImage(entity.identifier, "entity");
+      if (!definition && !importedEntityDefinitions.has(entity.identifier)) {
+        importedEntityDefinitions.set(entity.identifier, {
+          id:entity.identifier,
+          name:entityName,
+          category:"Entities",
+          kind:"entity",
+          minecraftName:entity.identifier,
+          textureUrl:image,
+          defaultNbt:entity.nbt ?? {},
+          customAsset:true,
+        });
+      }
       return [[`${entityLayer}:${z * width + x}`, {
         identifier:entity.identifier,
-        name:definition?.name ?? entity.identifier.replace(/^minecraft:/, "").split("_").map(word => word[0]?.toUpperCase() + word.slice(1)).join(" "),
-        image:definition?.textureUrl,
+        name:entityName,
+        image,
         rotation:entity.rotation,
         nbt:entity.nbt ?? {},
       } satisfies EntityPlacement]];
@@ -1332,7 +1383,7 @@ export default function Home() {
       rotations,
       containers,
       entities,
-      customBlocks:[...importedVariants.values()],
+      customBlocks:[...importedVariants.values(), ...importedEntityDefinitions.values()],
     });
     setLayer(0);
     setSelection(null);
@@ -1343,6 +1394,15 @@ export default function Home() {
       setSelected(firstBlock.id);
       setSelectedRotation(firstBlock.sourceRotation ?? 0);
       setTool("paint");
+    } else {
+      const firstEntity = [...importedEntityDefinitions.values(), ...entityCatalog].find(candidate =>
+        Object.values(entities).some(entity => entity.identifier === candidate.id)
+      );
+      if (firstEntity) {
+        setSelected(firstEntity.id);
+        setSelectedRotation(firstEntity.sourceRotation ?? 0);
+        setTool("paint");
+      }
     }
     const cropped = sizeX > 128 || sizeZ > 128;
     window.alert(`Imported ${sizeX} × ${sizeY} × ${sizeZ} structure as ${sizeY} layers.${cropped ? " X/Z dimensions were cropped to Blockprint's 128-block limit." : ""}`);
@@ -1413,6 +1473,14 @@ export default function Home() {
                 </select>
               </label>)}
             </div> : <p className="empty-state">This block has no editable placement states.</p>}
+          </section>}
+          {selectedBlock?.customAsset && <section className="custom-asset-controls">
+            <span className="eyebrow">Custom asset</span>
+            <p>This identifier is not in Blockprint’s vanilla Bedrock catalog. Its custom image is stored with this project.</p>
+            <label className="button secondary">Change image
+              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden
+                onChange={event => { replaceCustomImage(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+            </label>
           </section>}
           <input className="search" placeholder="Search blocks…" value={search} onChange={e => setSearch(e.target.value)} />
           <label className="category-filter">

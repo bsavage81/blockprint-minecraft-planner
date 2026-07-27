@@ -129,6 +129,10 @@ h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .palette-block-state h2 { overflow-wrap:anywhere; }
 .palette-block-state .empty-state { margin:8px 0 0; }
 .palette-block-state + .search { margin-top:14px; }
+.custom-asset-controls { margin-top:12px; padding:12px; border:1px dashed #a7ada2; border-radius:5px; background:#f3f4ed; }
+.custom-asset-controls p { margin:5px 0 10px; color:var(--muted); font-size:10px; line-height:1.45; }
+.custom-asset-controls .button { display:inline-flex; }
+.custom-asset-controls + .search { margin-top:14px; }
 .size-controls { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:end; gap:7px; }
 .size-controls label { display:grid; gap:4px; }
 .size-controls input { font-variant-numeric:tabular-nums; }

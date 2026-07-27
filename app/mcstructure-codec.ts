@@ -45,6 +45,7 @@ function typedNbtList<T>(values: T[], type: TAG) {
 
 function primitive(value: unknown, key = ""): BlockStateValue | undefined {
   const unwrapped = value && typeof value === "object" && "valueOf" in value ? value.valueOf() : value;
+  if (value instanceof Int8 && (unwrapped === 0 || unwrapped === 1)) return Boolean(unwrapped);
   if (/_bit$/.test(key) && (unwrapped === 0 || unwrapped === 1)) return Boolean(unwrapped);
   return typeof unwrapped === "string" || typeof unwrapped === "number" || typeof unwrapped === "boolean" ? unwrapped : undefined;
 }

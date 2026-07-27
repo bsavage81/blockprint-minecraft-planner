@@ -124,7 +124,7 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         null,
         { name:"minecraft:barrel", states:{ cardinal_direction:"east" } },
         null,
-        { name:"minecraft:stone", states:{} },
+        { name:"my_pack:glowing_crate", states:{ powered:true } },
       ],
     ],
     containers:{
@@ -138,7 +138,7 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
     },
     entities:[
       {
-        identifier:"minecraft:pig",
+        identifier:"my_pack:helper",
         x:1.5,
         y:0,
         z:0.5,
