@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { Float32, Int32, read as readNbt, write as writeNbt } from "nbtify";
+import { Float32, Int16, Int32, read as readNbt, write as writeNbt } from "nbtify";
 import {
   buildStateAwareCatalog,
   categoryForBlockName,
@@ -132,7 +132,20 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
       "0:0":{
         id:"Chest",
         items:[
-          { slot:0, name:"minecraft:diamond", count:12, damage:0, nbt:{ display:{ Name:"Treasure" }, custom_value:7 } },
+          {
+            slot:0,
+            name:"minecraft:diamond_pickaxe",
+            count:1,
+            damage:0,
+            nbt:{
+              WasPickedUp:0,
+              tag:{
+                Damage:236,
+                display:{ Name:"Treasure" },
+                ench:[{ id:17, lvl:3 }, { id:15, lvl:5 }],
+              },
+            },
+          },
         ],
         nbt:{ CustomName:"Supply Chest" },
       },
@@ -158,7 +171,14 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         y:1,
         z:1.5,
         rotation:[0, 0],
-        nbt:{ Item:{ Name:"minecraft:tropical_fish_bucket", Count:1, Damage:0 } },
+        nbt:{
+          Item:{
+            Name:"minecraft:diamond_pickaxe",
+            Count:1,
+            Damage:0,
+            tag:{ ench:[{ id:17, lvl:3 }] },
+          },
+        },
       },
     ],
   };
@@ -169,6 +189,12 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   assert.deepEqual(decoded, expected);
 
   const parsed = await readNbt(binary, { endian:"little", compression:null });
+  const exportedItem = parsed.data.structure.palette.default.block_position_data["0"].block_entity_data.Items[0];
+  assert.ok(exportedItem.tag.ench[0].id instanceof Int16, "enchantment ids export as Bedrock shorts");
+  assert.ok(exportedItem.tag.ench[0].lvl instanceof Int16, "enchantment levels export as Bedrock shorts");
+  const droppedItem = parsed.data.structure.entities[1].Item;
+  assert.ok(droppedItem.tag.ench[0].id instanceof Int16, "dropped-item enchantment ids export as Bedrock shorts");
+  assert.ok(droppedItem.tag.ench[0].lvl instanceof Int16, "dropped-item enchantment levels export as Bedrock shorts");
   const origin = [-427, 64, 307];
   parsed.data.structure_world_origin.forEach((_, index) => { parsed.data.structure_world_origin[index] = new Int32(origin[index]); });
   parsed.data.structure.entities.forEach(rawEntity => {

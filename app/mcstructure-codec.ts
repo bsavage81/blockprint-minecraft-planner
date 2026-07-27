@@ -95,6 +95,39 @@ function editableNbt(value: unknown): unknown {
     : value;
 }
 
+function editableItemNbt(value: unknown, path: string[] = []): unknown {
+  if (Array.isArray(value)) {
+    if (value.length && value.every(child => typeof child === "number")) {
+      const usesFloat = value.some(child => !Number.isInteger(child));
+      return typedNbtList(
+        value.map(child => usesFloat ? new Float32(child as number) : new Int32(child as number)),
+        usesFloat ? TAG.FLOAT : TAG.INT,
+      );
+    }
+    const result = value.map(child => editableItemNbt(child, [...path, "[]"]));
+    if (!result.length) return typedNbtList(result, TAG.COMPOUND);
+    const first = value[0];
+    const type = typeof first === "string"
+      ? TAG.STRING
+      : typeof first === "boolean"
+        ? TAG.BYTE
+        : Array.isArray(first)
+          ? TAG.LIST
+          : TAG.COMPOUND;
+    return typedNbtList(result, type);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>)
+      .map(([key, child]) => [key, editableItemNbt(child, [...path, key])]));
+  }
+  if (typeof value === "number") {
+    const key = path.at(-1);
+    if (path.includes("ench") && (key === "id" || key === "lvl")) return new Int16(value);
+    return Number.isInteger(value) ? new Int32(value) : new Float32(value);
+  }
+  return value;
+}
+
 function positionIndex(width: number, height: number, depth: number, layer: number, cell: number) {
   const x = cell % width;
   const z = Math.floor(cell / width);
@@ -127,7 +160,7 @@ export async function encodeMcstructure(model: StructureModel) {
   const blockPositionData = Object.fromEntries(Object.entries(model.containers ?? {}).map(([key, container]) => {
     const [layer, cell] = key.split(":").map(Number);
     const items = container.items.map(item => ({
-      ...(editableNbt(item.nbt ?? {}) as Record<string, unknown>),
+      ...(editableItemNbt(item.nbt ?? {}) as Record<string, unknown>),
       Name:item.name,
       Count:new Int8(Math.max(1, Math.min(64, item.count))),
       Damage:new Int16(item.damage ?? 0),
@@ -149,7 +182,7 @@ export async function encodeMcstructure(model: StructureModel) {
         const rotation = entity.rotation ?? [0, 0];
         const pos = [new Float32(entity.x), new Float32(entity.y), new Float32(entity.z)];
         return {
-          ...(editableNbt(entity.nbt ?? {}) as Record<string, unknown>),
+          ...(editableItemNbt(entity.nbt ?? {}) as Record<string, unknown>),
           identifier:entity.identifier,
           Pos:typedNbtList(pos, TAG.FLOAT),
           Rotation:typedNbtList([new Float32(rotation[0]), new Float32(rotation[1])], TAG.FLOAT),
