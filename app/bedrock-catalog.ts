@@ -227,6 +227,7 @@ function officialStateDefinitions(
   add("age", Array.from({ length:16 }, (_, index) => index));
   add("bite_counter", Array.from({ length:7 }, (_, index) => index));
   add("honey_level", Array.from({ length:6 }, (_, index) => index));
+  add("minecraft:vertical_half", ["bottom", "top"]);
   for (const state of ["upper_block_bit", "head_piece_bit", "occupied_bit", "lit", "active", "open_bit"]) {
     add(state, [false, true]);
   }

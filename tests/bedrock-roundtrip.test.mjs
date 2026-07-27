@@ -67,6 +67,18 @@ test("builds canonical blocks while retaining legacy texture aliases", () => {
   assert.equal(variantId("minecraft:oak_log", { pillar_axis:"x" }), "minecraft:oak_log[pillar_axis=x]");
 });
 
+test("gives slabs editable bottom and top vertical-half states", () => {
+  const catalog = buildStateAwareCatalog(
+    [{ id:"oak_planks", name:"Oak Planks", category:"Wood", textureUrl:"oak.png" }],
+    [{ name:"minecraft:oak_slab", states:["minecraft:vertical_half"] }],
+  );
+  const slab = catalog.find(block => block.id === "minecraft:oak_slab");
+  assert.deepEqual(slab.minecraftStates, { "minecraft:vertical_half":"bottom" });
+  assert.deepEqual(slab.stateDefinitions, [
+    { name:"minecraft:vertical_half", values:["bottom", "top"] },
+  ]);
+});
+
 test("selects state-specific textures and rotates official Bedrock direction states", () => {
   const catalog = buildStateAwareCatalog([
     { id:"bedrock:door_lower", name:"Door Lower", category:"Utility", textureUrl:"door-lower.png" },
