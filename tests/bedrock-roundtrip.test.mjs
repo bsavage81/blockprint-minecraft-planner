@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   buildStateAwareCatalog,
@@ -11,6 +12,32 @@ import {
   variantId,
 } from "../app/bedrock-catalog.ts";
 import { decodeMcstructure, encodeMcstructure } from "../app/mcstructure-codec.ts";
+
+test("contains every official Bedrock identifier, including white concrete", () => {
+  const textures = JSON.parse(readFileSync(new URL("../public/bedrock-blocks.json", import.meta.url), "utf8"));
+  const official = JSON.parse(readFileSync(new URL("../public/bedrock-block-states.json", import.meta.url), "utf8"));
+  const catalog = buildStateAwareCatalog(textures.blocks, official.blocks);
+  const visible = catalog.filter(block => !block.legacyAlias);
+  assert.equal(visible.length, official.blocks.length);
+  assert.deepEqual(
+    new Set(visible.map(block => block.id)),
+    new Set(official.blocks.map(block => block.name)),
+  );
+  const whiteConcrete = visible.find(block => block.id === "minecraft:white_concrete");
+  assert.ok(whiteConcrete, "white concrete is present");
+  assert.equal(whiteConcrete.textureMatch, "exact");
+  assert.match(whiteConcrete.textureUrl, /concrete(?:_white)?\.png$/);
+  const whitePowder = visible.find(block => block.id === "minecraft:white_concrete_powder");
+  assert.equal(whitePowder.textureMatch, "exact");
+  assert.match(whitePowder.textureUrl, /(?:concrete_powder_white|concretePowder)\.png$/);
+  const wheat = visible.find(block => block.id === "minecraft:wheat");
+  assert.notEqual(
+    textureForFace({ ...wheat, minecraftStates:{ growth:0 } }),
+    textureForFace({ ...wheat, minecraftStates:{ growth:7 } }),
+    "growth states select different atlas-array textures",
+  );
+  assert.ok(wheat.stateDefinitions.some(definition => definition.name === "growth"));
+});
 
 test("builds canonical blocks while retaining legacy texture aliases", () => {
   const catalog = buildStateAwareCatalog([

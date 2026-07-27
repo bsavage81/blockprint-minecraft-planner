@@ -27,7 +27,10 @@ type Block = {
   stateDefinitions?: BlockStateDefinition[];
   textures?: Partial<Record<"up" | "down" | "north" | "south" | "east" | "west" | "side", string>>;
   textureVariants?: Record<string, string>;
+  textureRefs?: Partial<Record<"up" | "down" | "north" | "south" | "east" | "west" | "side", string>>;
   legacyAlias?: boolean;
+  officialStates?: string[];
+  textureMatch?: "exact" | "material" | "missing";
   sourceRotation?: number;
 };
 
@@ -72,7 +75,7 @@ export default function Home() {
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
   const [selectedRotation, setSelectedRotation] = useState(0);
-  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "picker" | "grab">("paint");
+  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "replace" | "picker" | "grab">("paint");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
@@ -102,16 +105,20 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");
     if (saved) {
+      // Restore browser-owned project state after the client mounts.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       try { setBlueprint(JSON.parse(saved)); } catch {}
     }
   }, []);
 
   useEffect(() => {
-    fetch("./bedrock-blocks.json")
-      .then(response => response.ok ? response.json() : Promise.reject())
-      .then(data => {
-        if (Array.isArray(data.blocks) && data.blocks.length) {
-          const catalog = buildStateAwareCatalog(data.blocks);
+    Promise.all([
+      fetch("./bedrock-blocks.json").then(response => response.ok ? response.json() : Promise.reject()),
+      fetch("./bedrock-block-states.json").then(response => response.ok ? response.json() : Promise.reject()),
+    ])
+      .then(([textures, official]) => {
+        if (Array.isArray(textures.blocks) && textures.blocks.length && Array.isArray(official.blocks)) {
+          const catalog = buildStateAwareCatalog(textures.blocks, official.blocks);
           setBaseBlocks(catalog);
           setSelected(catalog.find(block => !block.legacyAlias)?.id ?? catalog[0].id);
         }
@@ -124,6 +131,8 @@ export default function Home() {
   }, [blueprint]);
 
   useEffect(() => {
+    // Keep editable form drafts synchronized after imports, new projects, and undo.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCanvasWidth(String(blueprint.width));
     setCanvasDepth(String(blueprint.depth));
   }, [blueprint.width, blueprint.depth]);
@@ -181,7 +190,7 @@ export default function Home() {
   const categories = ["All", ...Array.from(new Set(blocks.map(b => b.category)))];
   const visibleBlocks = blocks.filter(b => !b.legacyAlias &&
     (category === "All" || b.category === category) &&
-    b.name.toLowerCase().includes(search.toLowerCase())
+    `${blockLabel(b)} ${b.minecraftName ?? b.id}`.toLowerCase().includes(search.toLowerCase())
   );
   const current = blueprint.layers[layer] ?? {};
   const currentRotations = blueprint.rotations?.[layer] ?? {};
@@ -196,6 +205,24 @@ export default function Home() {
     blueprint.layers.forEach(l => Object.values(l).forEach(id => counts.set(id, (counts.get(id) ?? 0) + 1)));
     return [...counts.entries()].sort((a,b) => b[1] - a[1]);
   }, [blueprint]);
+
+  function blockStateSummary(block: Block) {
+    const defaultBlock = baseBlocks.find(candidate =>
+      !candidate.legacyAlias &&
+      candidate.minecraftName === block.minecraftName
+    );
+    const defaults = defaultBlock?.minecraftStates ?? {};
+    return Object.entries(block.minecraftStates ?? {})
+      .filter(([key, value]) => defaults[key] !== value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => `${key}=${String(value)}`)
+      .join(", ");
+  }
+
+  function blockLabel(block: Block) {
+    const summary = blockStateSummary(block);
+    return summary ? `${block.name} (${summary})` : block.name;
+  }
 
   function checkpoint() {
     setHistory(previous => [...previous.slice(-49), structuredClone(blueprint)]);
@@ -400,6 +427,31 @@ export default function Home() {
     });
   }
 
+  function replaceOnLayer(start: number) {
+    const target = current[start];
+    if (!target) return;
+    const indices = Object.entries(current)
+      .filter(([, blockId]) => blockId === target)
+      .map(([index]) => Number(index));
+    const changed = indices.some(index =>
+      current[index] !== selected ||
+      (currentRotations[index] ?? 0) !== selectedRotation
+    );
+    if (!changed) return;
+    checkpoint();
+    setBlueprint(previous => {
+      const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
+      const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({})))
+        .map((item, index) => index === layer ? { ...item } : item);
+      indices.forEach(index => {
+        layers[layer][index] = selected;
+        if (selectedRotation) rotations[layer][index] = selectedRotation;
+        else delete rotations[layer][index];
+      });
+      return { ...previous, layers, rotations };
+    });
+  }
+
   function paintCell(index: number) {
     setBlueprint(prev => {
       const layers = prev.layers.map((l, i) => i === layer ? { ...l } : l);
@@ -420,7 +472,7 @@ export default function Home() {
     setRecentBlocks(previous => [blockId, selected, ...previous].filter((id, index, items) => items.indexOf(id) === index).slice(0, 11));
     setSelected(blockId);
     setSelectedRotation(blocks.find(block => block.id === blockId)?.sourceRotation ?? 0);
-    setTool("paint");
+    if (tool !== "replace") setTool("paint");
   }
 
   function setSelectedBlockState(stateName: string, value: string | number | boolean) {
@@ -1020,7 +1072,7 @@ export default function Home() {
           <button className="sidebar-toggle palette-toggle" onClick={() => setPaletteCollapsed(value => !value)} aria-label={paletteCollapsed ? "Expand block palette" : "Minimize block palette"} title={paletteCollapsed ? "Expand block palette" : "Minimize block palette"}>{paletteCollapsed ? "›" : "‹"}</button>
           <div className="panel-heading"><div><span className="eyebrow">Bedrock catalog</span><h2>Block palette</h2></div><span className="count">{blocks.filter(block => !block.legacyAlias).length}</span></div>
           {selectedBlock?.minecraftName && <section className="palette-block-state">
-            <span className="eyebrow">Bedrock block</span><h2>{selectedBlock.name}</h2>
+            <span className="eyebrow">Bedrock block</span><h2>{blockLabel(selectedBlock)}</h2>
             <code className="block-identifier">{selectedBlock.minecraftName}</code>
             {selectedBlock.stateDefinitions?.length ? <div className="state-controls">
               {selectedBlock.stateDefinitions.map(definition => <label className="field" key={definition.name}>
@@ -1041,14 +1093,14 @@ export default function Home() {
           </div>
           <div className="block-list">
             {visibleBlocks.map(block => (
-              <button key={block.id} className={`block-option ${selected === block.id && tool === "paint" ? "selected" : ""}`}
+              <button key={block.id} className={`block-option ${selected === block.id && (tool === "paint" || tool === "replace") ? "selected" : ""}`}
                 onClick={() => chooseBlock(block.id)}>
                 <span className="block-swatch" style={{
                   backgroundColor:block.color,
                   backgroundImage:textureForFace(block, "up") ? `url(${textureForFace(block, "up")})` : block.texture,
                   backgroundSize:textureForFace(block, "up") ? "cover" : undefined
                 }} />
-                <span><strong>{block.name}</strong><small>{block.category}</small></span>
+                <span><strong>{blockLabel(block)}</strong><small>{block.textureMatch === "missing" ? `${block.category} · texture needed` : block.category}</small></span>
               </button>
             ))}
           </div>
@@ -1062,6 +1114,7 @@ export default function Home() {
                 <button className={tool === "erase" ? "active" : ""} onClick={() => setTool("erase")}>Erase</button>
                 <button className={tool === "line" ? "active" : ""} onClick={() => setTool("line")}>Line</button>
                 <button className={tool === "fill" ? "active" : ""} onClick={() => setTool("fill")}>Fill</button>
+                <button className={tool === "replace" ? "active" : ""} onClick={() => setTool("replace")} title="Replace every matching block on this layer">Replace</button>
                 <button className={tool === "picker" ? "active" : ""} onClick={() => setTool("picker")} title="Pick a block (Alt+click)">Picker</button>
                 <button onClick={rotateSelected} title="Rotate selected texture 90° (R)">Rotate {selectedRotation}°</button>
                 <button className={tool === "select" ? "active" : ""} onClick={() => setTool("select")}>Select</button>
@@ -1079,18 +1132,18 @@ export default function Home() {
             </div>
             <div className="block-history" aria-label="Selected and recently used blocks">
               <span className="block-history-label">Current</span>
-              {selectedBlock && <button className="current-block" onClick={() => setTool("paint")} title={`Paint with ${selectedBlock.name}`}>
+              {selectedBlock && <button className="current-block" onClick={() => setTool("paint")} title={`Paint with ${blockLabel(selectedBlock)}`}>
                 <span className="history-swatch" style={{
                   backgroundColor:selectedBlock.color,
                   backgroundImage:selectedBlock.textureUrl ? `url(${selectedBlock.textureUrl})` : selectedBlock.texture,
                   backgroundSize:selectedBlock.textureUrl ? "cover" : undefined,
                   transform:`rotate(${selectedRotation}deg)`
                 }} />
-                <span>{selectedBlock.name}</span>
+                <span>{blockLabel(selectedBlock)}</span>
               </button>}
               <span className="block-history-label recent-label">Recent</span>
               <div className="recent-blocks">
-                {recentBlockOptions.length ? recentBlockOptions.map(block => <button key={block.id} onClick={() => chooseBlock(block.id)} title={block.name} aria-label={`Paint with recently used ${block.name}`}>
+                {recentBlockOptions.length ? recentBlockOptions.map(block => <button key={block.id} onClick={() => chooseBlock(block.id)} title={blockLabel(block)} aria-label={`Paint with recently used ${blockLabel(block)}`}>
                   <span className="history-swatch" style={{
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
@@ -1161,8 +1214,8 @@ export default function Home() {
                 const displayRotation = currentBlock
                   ? currentRotations[index] ?? 0
                   : lowerLayerIndex >= 0 ? blueprint.rotations?.[lowerLayerIndex]?.[index] ?? 0 : 0;
-                return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentBlock ? `, ${currentBlock.name}` : lowerBlock ? `, ${lowerBlock.name} from lower layer` : ", empty"}`}
-                  title={currentBlock?.name ?? (lowerBlock ? `${lowerBlock.name} (lower layer)` : undefined)}
+                return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentBlock ? `, ${blockLabel(currentBlock)}` : lowerBlock ? `, ${blockLabel(lowerBlock)} from lower layer` : ", empty"}`}
+                  title={currentBlock ? blockLabel(currentBlock) : lowerBlock ? `${blockLabel(lowerBlock)} (lower layer)` : undefined}
                   className={`cell ${currentBlock ? "filled" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
                   onPointerDown={e => {
                     if (tool === "grab") return;
@@ -1179,6 +1232,8 @@ export default function Home() {
                       setLinePreview([index]);
                     } else if (tool === "fill") {
                       fillArea(index);
+                    } else if (tool === "replace") {
+                      replaceOnLayer(index);
                     } else {
                       checkpoint();
                       painting.current = true;
@@ -1260,12 +1315,12 @@ export default function Home() {
               <ol>{materialCounts.map(([id, amount]) => {
                 const block = blocks.find(b => b.id === id);
                 if (!block) return null;
-                return <li key={id}><button onClick={() => chooseBlock(id)} title={`Paint with ${block.name}`}>
+                return <li key={id}><button onClick={() => chooseBlock(id)} title={`Paint with ${blockLabel(block)}`}>
                   <span className="mini-swatch" style={{
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
                     backgroundSize:block.textureUrl ? "cover" : undefined
-                  }}/><span>{block.name}</span><strong>{amount}</strong>
+                  }}/><span>{blockLabel(block)}</span><strong>{amount}</strong>
                 </button></li>;
               })}</ol>}
           </section>

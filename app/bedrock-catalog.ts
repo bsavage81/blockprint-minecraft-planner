@@ -14,12 +14,17 @@ export type CatalogBlock = {
   textureUrl?: string;
   textures?: Partial<Record<"up" | "down" | "north" | "south" | "east" | "west" | "side", string>>;
   textureVariants?: Record<string, string>;
+  textureRefs?: Partial<Record<"up" | "down" | "north" | "south" | "east" | "west" | "side", string>>;
   minecraftName?: string;
   minecraftStates?: Record<string, BlockStateValue>;
   stateDefinitions?: BlockStateDefinition[];
   sourceRotation?: number;
   legacyAlias?: boolean;
+  officialStates?: string[];
+  textureMatch?: "exact" | "material" | "missing";
 };
+
+export type OfficialBlock = { name: string; states: string[] };
 
 const FACE_SUFFIXES: [RegExp, keyof NonNullable<CatalogBlock["textures"]>][] = [
   [/_upper$/, "side"],
@@ -43,6 +48,7 @@ export function canonicalNameFromTexture(textureId: string) {
     .replace(/^cauldron_(?:water|lava|powder_snow|inner)$/, "cauldron");
   const aliases: Record<string, string> = {
     brick: "bricks",
+    concrete: "white_concrete",
     cobblestone_mossy: "mossy_cobblestone",
     endstone: "end_stone",
     door: "wooden_door",
@@ -55,6 +61,28 @@ export function canonicalNameFromTexture(textureId: string) {
     flowing_water: "water",
   };
   return aliases[name] ?? name;
+}
+
+function fallbackColor(name: string) {
+  let hash = 0;
+  for (const character of name) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  return `hsl(${hash % 360} 22% 48%)`;
+}
+
+function materialCandidates(localName: string) {
+  const candidates = [localName];
+  const withoutLit = localName.replace(/^lit_/, "");
+  if (withoutLit !== localName) candidates.push(withoutLit);
+  const base = withoutLit.replace(
+    /_(?:double_slab|slab|stairs|wall|button|pressure_plate|fence_gate|fence|standing_sign|wall_sign|hanging_sign)$/,
+    "",
+  );
+  if (base !== withoutLit) candidates.push(base, `${base}_planks`);
+  const wood = localName.match(/^(acacia|bamboo|birch|cherry|crimson|dark_oak|jungle|mangrove|oak|pale_oak|spruce|warped)_/);
+  if (wood) candidates.push(`${wood[1]}_planks`);
+  if (/^wooden_(?:button|door|pressure_plate)$/.test(localName)) candidates.push("oak_planks");
+  if (localName === "white_concrete_powder") candidates.push("white_concrete");
+  return [...new Set(candidates)];
 }
 
 function faceFromTexture(textureId: string): keyof NonNullable<CatalogBlock["textures"]> {
@@ -137,18 +165,46 @@ function defaultStates(definitions: BlockStateDefinition[]) {
   return Object.fromEntries(definitions.map(definition => [definition.name, definition.values[0]]));
 }
 
-export function buildStateAwareCatalog(textureBlocks: CatalogBlock[]) {
+function officialStateDefinitions(
+  localName: string,
+  officialStates: string[],
+  textureBlock?: CatalogBlock,
+) {
+  const definitions = stateDefinitionsFor(localName);
+  const known = new Set(definitions.map(definition => definition.name));
+  const add = (name: string, values: BlockStateValue[]) => {
+    if (officialStates.includes(name) && !known.has(name)) {
+      definitions.push({ name, values });
+      known.add(name);
+    }
+  };
+  const variantIndices = Object.keys(textureBlock?.textureVariants ?? {})
+    .map(key => Number(key.match(/#(\d+)$/)?.[1]))
+    .filter(Number.isFinite);
+  const variantMax = Math.max(0, ...variantIndices);
+  add("growth", Array.from({ length:Math.max(8, variantMax + 1) }, (_, index) => index));
+  add("age", Array.from({ length:16 }, (_, index) => index));
+  add("bite_counter", Array.from({ length:7 }, (_, index) => index));
+  add("honey_level", Array.from({ length:6 }, (_, index) => index));
+  for (const state of ["upper_block_bit", "head_piece_bit", "occupied_bit", "lit", "active", "open_bit"]) {
+    add(state, [false, true]);
+  }
+  return definitions;
+}
+
+export function buildStateAwareCatalog(textureBlocks: CatalogBlock[], officialBlocks: OfficialBlock[] = []) {
   const canonical = new Map<string, CatalogBlock>();
   for (const textureBlock of textureBlocks) {
-    const localName = canonicalNameFromTexture(textureBlock.id);
+    const localName = textureBlock.minecraftName?.replace(/^minecraft:/, "") ?? canonicalNameFromTexture(textureBlock.id);
     if (!localName || /(?:placeholder|missing|debug|destroy_stage|breaking|particle)/.test(localName)) continue;
     const minecraftName = `minecraft:${localName}`;
     const existing = canonical.get(minecraftName);
     const face = faceFromTexture(textureBlock.id);
     const textureId = textureBlock.id.replace(/^[^:]+:/, "");
     if (existing) {
-      if (textureBlock.textureUrl) existing.textures![face] = textureBlock.textureUrl;
-      if (textureBlock.textureUrl) existing.textureVariants![textureId] = textureBlock.textureUrl;
+      Object.assign(existing.textures ??= {}, textureBlock.textures ?? (textureBlock.textureUrl ? { [face]:textureBlock.textureUrl } : {}));
+      Object.assign(existing.textureVariants ??= {}, textureBlock.textureVariants ?? (textureBlock.textureUrl ? { [textureId]:textureBlock.textureUrl } : {}));
+      Object.assign(existing.textureRefs ??= {}, textureBlock.textureRefs ?? {});
       continue;
     }
     const stateDefinitions = stateDefinitionsFor(localName);
@@ -159,18 +215,43 @@ export function buildStateAwareCatalog(textureBlocks: CatalogBlock[]) {
       minecraftName,
       minecraftStates: defaultStates(stateDefinitions),
       stateDefinitions,
-      textures: textureBlock.textureUrl ? { [face]: textureBlock.textureUrl } : undefined,
-      textureVariants:textureBlock.textureUrl ? { [textureId]:textureBlock.textureUrl } : undefined,
+      textures:textureBlock.textures ?? (textureBlock.textureUrl ? { [face]:textureBlock.textureUrl } : undefined),
+      textureVariants:textureBlock.textureVariants ?? (textureBlock.textureUrl ? { [textureId]:textureBlock.textureUrl } : undefined),
+      textureRefs:textureBlock.textureRefs,
     });
   }
 
-  const canonicalBlocks = [...canonical.values()].map(block => ({
+  const textureCanonicalBlocks = [...canonical.values()].map(block => ({
     ...block,
     textureUrl: textureForFace(block, "up"),
   }));
-  const byName = new Map(canonicalBlocks.map(block => [block.minecraftName, block]));
+  const byName = new Map(textureCanonicalBlocks.map(block => [block.minecraftName, block]));
+  const canonicalBlocks = officialBlocks.length ? officialBlocks.map(official => {
+    const localName = official.name.replace(/^minecraft:/, "");
+    const exact = byName.get(official.name);
+    const material = exact ?? materialCandidates(localName)
+      .map(candidate => byName.get(`minecraft:${candidate}`))
+      .find(Boolean);
+    const stateDefinitions = officialStateDefinitions(localName, official.states, material);
+    return {
+      ...(material ?? {}),
+      id:official.name,
+      name:title(localName),
+      category:material?.category ?? "Catalog",
+      color:material?.color ?? fallbackColor(localName),
+      minecraftName:official.name,
+      minecraftStates:defaultStates(stateDefinitions),
+      stateDefinitions,
+      officialStates:official.states,
+      legacyAlias:false,
+      textureMatch:exact ? "exact" as const : material ? "material" as const : "missing" as const,
+      textureUrl:material ? textureForFace(material, "up") : undefined,
+    };
+  }) : textureCanonicalBlocks;
+  const officialByName = new Map(canonicalBlocks.map(block => [block.minecraftName, block]));
   const aliases = textureBlocks.map(block => {
-    const target = byName.get(`minecraft:${canonicalNameFromTexture(block.id)}`);
+    const inferredName = `minecraft:${canonicalNameFromTexture(block.id)}`;
+    const target = officialByName.get(inferredName) ?? byName.get(inferredName);
     return target ? {
       ...target,
       ...block,
@@ -179,6 +260,7 @@ export function buildStateAwareCatalog(textureBlocks: CatalogBlock[]) {
       stateDefinitions:target.stateDefinitions,
       textures:target.textures,
       textureVariants:target.textureVariants,
+      textureRefs:target.textureRefs,
       legacyAlias:true,
     } : { ...block, legacyAlias:true };
   });
@@ -191,14 +273,32 @@ export function textureForFace(block: CatalogBlock | undefined, face: "up" | "do
   const states = block.minecraftStates ?? {};
   const variants = block.textureVariants ?? {};
   const firstVariant = (...names: string[]) => {
-    for (const name of names) if (name && variants[name]) return variants[name];
+    for (const name of names) {
+      if (!name) continue;
+      if (variants[name]) return variants[name];
+      if (variants[`${name}#0`]) return variants[`${name}#0`];
+    }
     return undefined;
   };
+  const stagedValue = states.growth ?? states.age ?? states.bite_counter ?? states.fill_level;
+  const stagedRef = block.textureRefs?.[face] ?? block.textureRefs?.side ?? block.textureRefs?.up;
+  if (stagedRef && typeof stagedValue === "number") {
+    const available = Object.keys(variants)
+      .filter(key => key.startsWith(`${stagedRef}#`))
+      .map(key => Number(key.slice(stagedRef.length + 1)))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    if (available.length > 1) {
+      const index = Math.min(Math.max(0, stagedValue), available[available.length - 1]);
+      const stagedTexture = variants[`${stagedRef}#${index}`];
+      if (stagedTexture) return stagedTexture;
+    }
+  }
   if (/_door$/.test(localName)) {
     const upper = Boolean(states.upper_block_bit);
     const stateTexture = upper
-      ? firstVariant(`${localName}_top`, `${localName}_upper`, localName === "wooden_door" ? "door_upper" : "")
-      : firstVariant(`${localName}_bottom`, `${localName}_lower`, localName === "wooden_door" ? "door_lower" : "");
+      ? block.textures?.side ?? firstVariant(`${localName}_top`, `${localName}_upper`, localName === "wooden_door" ? "door_upper" : "")
+      : block.textures?.up ?? block.textures?.down ?? firstVariant(`${localName}_bottom`, `${localName}_lower`, localName === "wooden_door" ? "door_lower" : "");
     if (stateTexture) return stateTexture;
   }
   if (/(?:^|_)campfire$/.test(localName)) {

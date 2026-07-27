@@ -3,7 +3,10 @@ import path from "node:path";
 
 const SOURCE_URL = "https://raw.githubusercontent.com/MicrosoftDocs/minecraft-creator/main/creator/Reference/Content/VanillaListingsReference/Blocks.md";
 const manifest = JSON.parse(fs.readFileSync(path.resolve("public/bedrock-blocks.json"), "utf8"));
-const textureIds = new Set(manifest.blocks.map(block => block.id.replace(/^bedrock:/, "")));
+const textureIds = new Set(manifest.blocks.flatMap(block => [
+  block.id.replace(/^bedrock:/, ""),
+  ...Object.keys(block.textureVariants ?? {}).map(key => key.replace(/#\d+$/, "")),
+]));
 const markdown = await fetch(SOURCE_URL).then(response => {
   if (!response.ok) throw new Error(`Could not download official block list (${response.status}).`);
   return response.text();
@@ -113,4 +116,8 @@ ${rows.map(row => `| \`${row.block}\` | \`${row.state}\` | ${row.label} | ${row.
 `;
 
 fs.writeFileSync(path.resolve("MISSING_TEXTURES.md"), report);
+fs.writeFileSync(
+  path.resolve("public/bedrock-block-states.json"),
+  `${JSON.stringify({ source:SOURCE_URL, blocks:officialBlocks }, null, 2)}\n`,
+);
 console.log(`Audited ${officialBlocks.length} official blocks; wrote ${rows.length} gaps to MISSING_TEXTURES.md.`);
