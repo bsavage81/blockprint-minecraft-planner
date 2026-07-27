@@ -181,6 +181,35 @@ h2 { margin:0; font-family:Georgia,serif; font-weight:500; font-size:19px; }
 .entity-preview { display:grid; align-content:start; justify-items:center; gap:12px; min-width:0; }
 .entity-preview > span,.entity-preview > strong { display:grid; place-items:center; width:150px; height:150px; border:1px solid var(--line); border-radius:8px; background-color:#e4e1d4; background-position:center; background-repeat:no-repeat; background-size:contain; image-rendering:pixelated; }
 .entity-preview code { max-width:100%; overflow-wrap:anywhere; color:var(--green-2); font-size:10px; }
+.nbt-tree { max-height:420px; overflow:auto; border:1px solid var(--line); border-radius:5px; padding:8px 0 5px; background:#fff; color:#171a17; font:11px/1.35 "Consolas","Courier New",monospace; }
+.nbt-node { position:relative; }
+.nbt-children { position:relative; }
+.nbt-children::before { content:""; position:absolute; top:0; bottom:0; left:calc(12px + var(--nbt-depth,0) * 18px); border-left:1px dotted #a7aaa4; }
+.nbt-row { display:flex; align-items:center; gap:5px; min-height:25px; padding:2px 8px 2px calc(7px + var(--nbt-depth) * 18px); white-space:nowrap; cursor:default; }
+.nbt-row:hover { background:#edf2e9; }
+.nbt-toggle,.nbt-toggle-placeholder { display:grid; place-items:center; width:15px; height:15px; flex:0 0 15px; padding:0; }
+.nbt-toggle { border:1px solid #9da39b; background:#fff; color:#304e3f; font:700 12px/1 monospace; }
+.nbt-badge { display:grid; place-items:center; width:20px; height:20px; flex:0 0 20px; border-radius:2px; color:#fff; font:bold 14px/1 Arial,sans-serif; text-transform:uppercase; }
+.nbt-badge.compound { background:#4b514c; }
+.nbt-badge.list { background:#6a6760; }
+.nbt-badge.string { background:#bc1797; }
+.nbt-badge.byte { background:#b80f0f; }
+.nbt-badge.int { background:#173ec5; }
+.nbt-badge.float { background:#94a400; }
+.nbt-badge.null { background:#777; }
+.nbt-row strong { font-weight:700; }
+.nbt-separator { margin-left:-3px; }
+.nbt-summary { overflow:hidden; color:#111; text-overflow:ellipsis; }
+.nbt-summary.branch { color:#3b493e; }
+.nbt-help { margin:7px 10px 2px; color:var(--muted); font:9px/1.4 Arial,sans-serif; }
+.nbt-edit-backdrop { position:fixed; inset:0; z-index:80; display:grid; place-items:center; padding:20px; background:rgba(25,28,24,.28); }
+.nbt-edit-dialog { width:min(92vw,470px); border:1px solid #aeb4ad; border-radius:8px; background:#f4f4f1; box-shadow:0 22px 60px rgba(0,0,0,.32); overflow:hidden; }
+.nbt-edit-dialog header { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:9px; padding:10px 13px; border-bottom:1px solid var(--line); background:#eaf3f4; }
+.nbt-edit-dialog header h3 { margin:0; font-size:13px; text-transform:capitalize; }
+.nbt-edit-dialog header button { border:0; background:transparent; font-size:22px; }
+.nbt-edit-dialog label { display:grid; grid-template-columns:65px minmax(0,1fr); align-items:center; gap:12px; padding:15px 20px 0; font:12px Arial,sans-serif; }
+.nbt-edit-dialog input { min-width:0; border:1px solid #c6cac4; padding:7px 8px; background:#fff; color:#111; }
+.nbt-edit-dialog footer { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; padding:13px 20px; border-top:1px solid var(--line); }
 
 @media (max-width:1050px) {
   .workspace { grid-template-columns:220px minmax(420px,1fr); }

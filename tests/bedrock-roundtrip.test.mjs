@@ -146,6 +146,14 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         rotation:[90, 0],
         nbt:{ CustomName:"Blueprint Pig", Persistent:1 },
       },
+      {
+        identifier:"minecraft:item",
+        x:0.5,
+        y:1,
+        z:1.5,
+        rotation:[0, 0],
+        nbt:{ Item:{ Name:"minecraft:tropical_fish_bucket", Count:1, Damage:0 } },
+      },
     ],
   };
   const binary = await encodeMcstructure(source);
@@ -155,8 +163,9 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   const parsed = await readNbt(binary, { endian:"little", compression:null });
   const origin = [-427, 64, 307];
   parsed.data.structure_world_origin.forEach((_, index) => { parsed.data.structure_world_origin[index] = new Int32(origin[index]); });
-  const rawEntity = parsed.data.structure.entities[0];
-  rawEntity.Pos.forEach((value, index) => { rawEntity.Pos[index] = new Float32(Number(value) + origin[index]); });
+  parsed.data.structure.entities.forEach(rawEntity => {
+    rawEntity.Pos.forEach((value, index) => { rawEntity.Pos[index] = new Float32(Number(value) + origin[index]); });
+  });
   const absoluteBinary = await writeNbt(parsed.data, { endian:"little", compression:null, rootName:"" });
   assert.deepEqual(
     await decodeMcstructure(absoluteBinary),

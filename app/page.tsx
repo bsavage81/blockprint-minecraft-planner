@@ -15,6 +15,7 @@ import {
   type BlockStateDefinition,
 } from "./bedrock-catalog";
 import { decodeMcstructure, encodeMcstructure, type ContainerData, type ContainerItem } from "./mcstructure-codec";
+import NbtTree from "./nbt-tree";
 
 type Block = {
   id: string;
@@ -124,8 +125,6 @@ export default function Home() {
   const [nbtError, setNbtError] = useState("");
   const [entityPrompt, setEntityPrompt] = useState<number | null>(null);
   const [openEntity, setOpenEntity] = useState<number | null>(null);
-  const [entityNbtDraft, setEntityNbtDraft] = useState("{}");
-  const [entityNbtError, setEntityNbtError] = useState("");
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -615,8 +614,6 @@ export default function Home() {
   function openEntityEditor(index: number) {
     const entity = blueprint.entities?.[containerKey(layer, index)];
     if (!entity) return;
-    setEntityNbtDraft(JSON.stringify(entity.nbt ?? {}, null, 2));
-    setEntityNbtError("");
     setEntityPrompt(null);
     setOpenEntity(index);
   }
@@ -628,7 +625,9 @@ export default function Home() {
       const key = containerKey(layer, openEntity);
       const entity = previous.entities?.[key];
       if (!entity) return previous;
-      return { ...previous, entities:{ ...(previous.entities ?? {}), [key]:{ ...entity, ...changes } } };
+      const updated = { ...entity, ...changes };
+      const presentation = droppedItemPresentation(updated.identifier, updated.nbt);
+      return { ...previous, entities:{ ...(previous.entities ?? {}), [key]:{ ...updated, ...presentation } } };
     });
   }
 
@@ -717,6 +716,18 @@ export default function Home() {
       if (texture) return texture;
     }
     return undefined;
+  }
+
+  function droppedItemPresentation(identifier: string, nbt: Record<string, unknown>): Partial<Pick<EntityPlacement, "name" | "image">> {
+    if (identifier !== "minecraft:item") return {};
+    const item = nbt.Item && typeof nbt.Item === "object" ? nbt.Item as Record<string, unknown> : undefined;
+    const itemName = typeof item?.Name === "string" ? item.Name : "";
+    if (!itemName) return {};
+    const displayName = itemName.replace(/^minecraft:/, "").split("_").map(word => word ? word[0].toUpperCase() + word.slice(1) : "").join(" ");
+    return {
+      name:`Dropped ${displayName}`,
+      image:itemTexture(itemName) ?? placeholderImage(itemName, "entity"),
+    };
   }
 
   function chooseBlock(blockId: string) {
@@ -1352,6 +1363,7 @@ export default function Home() {
       const definition = entityCatalog.find(candidate => candidate.id === entity.identifier);
       const entityName = definition?.name ?? entity.identifier.replace(/^minecraft:/, "").split("_").map(word => word[0]?.toUpperCase() + word.slice(1)).join(" ");
       const image = definition?.textureUrl ?? placeholderImage(entity.identifier, "entity");
+      const droppedItem = droppedItemPresentation(entity.identifier, entity.nbt ?? {});
       if (!definition && !importedEntityDefinitions.has(entity.identifier)) {
         importedEntityDefinitions.set(entity.identifier, {
           id:entity.identifier,
@@ -1366,8 +1378,8 @@ export default function Home() {
       }
       return [[`${entityLayer}:${z * width + x}`, {
         identifier:entity.identifier,
-        name:entityName,
-        image,
+        name:droppedItem.name ?? entityName,
+        image:droppedItem.image ?? image,
         rotation:entity.rotation,
         nbt:entity.nbt ?? {},
       } satisfies EntityPlacement]];
@@ -1851,21 +1863,9 @@ export default function Home() {
                 <label className="field"><span>Pitch</span><input type="number" value={activeEntity.rotation?.[1] ?? 0}
                   onChange={event => updateEntity({ rotation:[activeEntity.rotation?.[0] ?? 0, Number(event.target.value)] })} /></label>
               </div>
-              <label className="field"><span>Entity NBT (JSON)</span>
-                <textarea rows={14} value={entityNbtDraft} onChange={event => {
-                  const value = event.target.value;
-                  setEntityNbtDraft(value);
-                  try {
-                    const parsed = JSON.parse(value);
-                    if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error();
-                    setEntityNbtError("");
-                    updateEntity({ nbt:parsed });
-                  } catch {
-                    setEntityNbtError("Enter a valid JSON object. The last valid entity NBT is preserved.");
-                  }
-                }} />
-              </label>
-              {entityNbtError && <p className="field-error">{entityNbtError}</p>}
+              <div className="field"><span>Entity NBT</span>
+                <NbtTree value={activeEntity.nbt} onChange={nbt => updateEntity({ nbt })} />
+              </div>
             </div>
           </div>
           <footer><button className="remove-item" onClick={() => {
