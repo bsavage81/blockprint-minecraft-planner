@@ -95,6 +95,46 @@ function title(value: string) {
   return value.split("_").map(word => word ? word[0].toUpperCase() + word.slice(1) : "").join(" ");
 }
 
+export const CATALOG_CATEGORY_ORDER = [
+  "Wood",
+  "Stone",
+  "Nature",
+  "Ores & Minerals",
+  "Color",
+  "Glass",
+  "Nether & End",
+  "Redstone",
+  "Utility",
+  "Other",
+] as const;
+
+export function categoryForBlockName(name: string) {
+  const localName = name.replace(/^minecraft:/, "");
+  if (
+    /^(?:acacia|bamboo|birch|cherry|crimson|dark_oak|jungle|mangrove|oak|pale_oak|spruce|warped)_/.test(localName) ||
+    /(?:^|_)(?:wood|wooden|log|planks|stem|hyphae|bamboo_mosaic)(?:_|$)/.test(localName)
+  ) return "Wood";
+  if (/(?:concrete|terracotta|wool|carpet|glazed|candle|banner|shulker_box|bed$)/.test(localName)) return "Color";
+  if (/(?:glass|stained_glass)/.test(localName)) return "Glass";
+  if (
+    /(?:_ore$|coal|iron|copper|gold|diamond|emerald|lapis|redstone_block|amethyst|raw_|ancient_debris|netherite)/.test(localName)
+  ) return "Ores & Minerals";
+  if (/(?:nether|end_|purpur|chorus|soul_|magma|glowstone|crying_obsidian)/.test(localName)) return "Nether & End";
+  if (
+    /(?:redstone|repeater|comparator|observer|piston|dispenser|dropper|hopper|lever|button|pressure_plate|tripwire|daylight_detector|target|crafter|rail|sculk_sensor)/.test(localName)
+  ) return "Redstone";
+  if (
+    /(?:stone|cobble|deepslate|granite|diorite|andesite|tuff|calcite|dripstone|brick|quartz|sandstone|mud_brick|terracotta|concrete|prismarine|obsidian|basalt|blackstone|bedrock)/.test(localName)
+  ) return "Stone";
+  if (
+    /(?:grass|dirt|mud|sand|gravel|clay|snow|ice|water|lava|leaves|sapling|flower|bush|fern|vine|moss|azalea|mushroom|fungus|roots|crop|wheat|carrot|potato|beetroot|cactus|sugar_cane|kelp|coral|sponge|lily|seagrass|bamboo|pumpkin|melon|gourd|hay|podzol|mycelium|nylium|sculk|egg)/.test(localName)
+  ) return "Nature";
+  if (
+    /(?:door|trapdoor|fence|gate|wall|slab|stairs|sign|ladder|torch|lantern|chest|barrel|furnace|smoker|blast_furnace|crafting|table|anvil|grindstone|loom|stonecutter|cartography|smithing|brewing|cauldron|bookshelf|lectern|enchanting|beacon|conduit|campfire|bell|chain|lightning_rod|scaffolding|flower_pot|skull|head|frame|painting|jukebox|note_block|tnt)/.test(localName)
+  ) return "Utility";
+  return "Other";
+}
+
 export function stateDefinitionsFor(name: string): BlockStateDefinition[] {
   if (/(?:_log|_wood|_stem|_hyphae|pillar|bone_block|basalt)$/.test(name)) {
     return [{ name: "pillar_axis", values: ["y", "x", "z"] }];
@@ -237,7 +277,7 @@ export function buildStateAwareCatalog(textureBlocks: CatalogBlock[], officialBl
       ...(material ?? {}),
       id:official.name,
       name:title(localName),
-      category:material?.category ?? "Catalog",
+      category:categoryForBlockName(localName),
       color:material?.color ?? fallbackColor(localName),
       minecraftName:official.name,
       minecraftStates:defaultStates(stateDefinitions),

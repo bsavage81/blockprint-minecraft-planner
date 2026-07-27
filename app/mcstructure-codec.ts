@@ -1,4 +1,4 @@
-import { Int32, TAG, TAG_TYPE, read as readNbt, write as writeNbt } from "nbtify";
+import { Int8, Int16, Int32, TAG, TAG_TYPE, read as readNbt, write as writeNbt } from "nbtify";
 type BlockStateValue = string | number | boolean;
 
 export type StructureVariant = {
@@ -6,11 +6,26 @@ export type StructureVariant = {
   states: Record<string, BlockStateValue>;
 };
 
+export type ContainerItem = {
+  slot: number;
+  name: string;
+  count: number;
+  damage?: number;
+  nbt?: Record<string, unknown>;
+};
+
+export type ContainerData = {
+  id?: string;
+  items: ContainerItem[];
+  nbt?: Record<string, unknown>;
+};
+
 export type StructureModel = {
   width: number;
   height: number;
   depth: number;
   blocks: (StructureVariant | null)[][]; // layers, row-major X/Z cells
+  containers?: Record<string, ContainerData>; // "layer:cell"
 };
 
 function typedNbtList<T>(values: T[], type: TAG) {
@@ -26,6 +41,37 @@ function primitive(value: unknown, key = ""): BlockStateValue | undefined {
 
 function typedStates(states: Record<string, BlockStateValue>) {
   return Object.fromEntries(Object.entries(states).map(([key, value]) => [key, typeof value === "number" ? new Int32(value) : value]));
+}
+
+function plainNbt(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(plainNbt);
+  if (value && typeof value === "object") {
+    if ("valueOf" in value && value.valueOf() !== value && typeof value.valueOf() !== "object") return value.valueOf();
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, child]) => [key, plainNbt(child)]));
+  }
+  return value;
+}
+
+function editableNbt(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    const result = value.map(editableNbt);
+    if (result.length) {
+      const first = result[0];
+      const type = typeof first === "string" ? TAG.STRING : typeof first === "number" ? TAG.INT : TAG.COMPOUND;
+      return typedNbtList(result, type);
+    }
+    return typedNbtList(result, TAG.COMPOUND);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, child]) => [key, editableNbt(child)]));
+  }
+  return typeof value === "number" ? new Int32(value) : value;
+}
+
+function positionIndex(width: number, height: number, depth: number, layer: number, cell: number) {
+  const x = cell % width;
+  const z = Math.floor(cell / width);
+  return x * depth * height + layer * depth + z;
 }
 
 export async function encodeMcstructure(model: StructureModel) {
@@ -51,6 +97,22 @@ export async function encodeMcstructure(model: StructureModel) {
       }
     }
   }
+  const blockPositionData = Object.fromEntries(Object.entries(model.containers ?? {}).map(([key, container]) => {
+    const [layer, cell] = key.split(":").map(Number);
+    const items = container.items.map(item => ({
+      ...(editableNbt(item.nbt ?? {}) as Record<string, unknown>),
+      Name:item.name,
+      Count:new Int8(Math.max(1, Math.min(64, item.count))),
+      Damage:new Int16(item.damage ?? 0),
+      Slot:new Int8(item.slot),
+    }));
+    const blockEntityData = {
+      ...(editableNbt(container.nbt ?? {}) as Record<string, unknown>),
+      id:container.id ?? "Chest",
+      Items:typedNbtList(items, TAG.COMPOUND),
+    };
+    return [String(positionIndex(model.width, model.height, model.depth, layer, cell)), { block_entity_data:blockEntityData }];
+  }));
   const root = {
     format_version:new Int32(1),
     size:[new Int32(model.width), new Int32(model.height), new Int32(model.depth)],
@@ -59,7 +121,7 @@ export async function encodeMcstructure(model: StructureModel) {
       entities:typedNbtList<Record<string, unknown>>([], TAG.COMPOUND),
       palette:{ default:{
         block_palette:palette.map(entry => ({ name:entry.name, states:typedStates(entry.states), version:new Int32(18168865) })),
-        block_position_data:{},
+        block_position_data:blockPositionData,
       } },
     },
     structure_world_origin:[new Int32(0), new Int32(0), new Int32(0)],
@@ -88,6 +150,7 @@ export async function decodeMcstructure(binary: ArrayBuffer | Uint8Array): Promi
   const primary = Array.from(blockIndices[0], Number);
   if (primary.length < width * height * depth) throw new Error("The structure block data is incomplete.");
   const blocks: (StructureVariant | null)[][] = Array.from({ length:height }, () => Array(width * depth).fill(null));
+  const containers: Record<string, ContainerData> = {};
   for (let index = 0; index < width * height * depth; index++) {
     const x = Math.floor(index / (depth * height));
     const y = Math.floor(index / depth) % height;
@@ -95,5 +158,27 @@ export async function decodeMcstructure(binary: ArrayBuffer | Uint8Array): Promi
     const variant = palette[primary[index]];
     if (variant && !/^minecraft:(?:air|cave_air|void_air|structure_void)$/.test(variant.name)) blocks[y][z * width + x] = variant;
   }
-  return { width, height, depth, blocks };
+  const positionData = (defaultPalette.block_position_data ?? {}) as Record<string, Record<string, unknown>>;
+  for (const [rawIndex, entry] of Object.entries(positionData)) {
+    const index = Number(rawIndex);
+    if (!Number.isInteger(index) || index < 0 || index >= width * height * depth) continue;
+    const x = Math.floor(index / (depth * height));
+    const y = Math.floor(index / depth) % height;
+    const z = index % depth;
+    const blockEntity = (entry.block_entity_data ?? {}) as Record<string, unknown>;
+    const rawItems = Array.isArray(blockEntity.Items) ? blockEntity.Items as Record<string, unknown>[] : [];
+    const items = rawItems.map(item => ({
+      slot:Number(item.Slot ?? 0),
+      name:String(item.Name ?? "minecraft:air"),
+      count:Number(item.Count ?? 1),
+      damage:Number(item.Damage ?? 0),
+      nbt:plainNbt(Object.fromEntries(Object.entries(item).filter(([key]) => !["Slot", "Name", "Count", "Damage"].includes(key)))) as Record<string, unknown>,
+    }));
+    containers[`${y}:${z * width + x}`] = {
+      id:String(blockEntity.id ?? "Chest"),
+      items,
+      nbt:plainNbt(Object.fromEntries(Object.entries(blockEntity).filter(([key]) => !["id", "Items", "x", "y", "z"].includes(key)))) as Record<string, unknown>,
+    };
+  }
+  return { width, height, depth, blocks, containers };
 }

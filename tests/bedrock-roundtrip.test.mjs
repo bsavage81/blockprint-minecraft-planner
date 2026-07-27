@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   buildStateAwareCatalog,
+  categoryForBlockName,
   catalogNameForImportedBlock,
   matchCatalogBlock,
   rotateBlockStates,
@@ -37,6 +38,16 @@ test("contains every official Bedrock identifier, including white concrete", () 
     "growth states select different atlas-array textures",
   );
   assert.ok(wheat.stateDefinitions.some(definition => definition.name === "growth"));
+});
+
+test("groups blocks into practical material categories", () => {
+  for (const block of ["oak_planks", "spruce_log", "mangrove_door", "bamboo_fence"]) {
+    assert.equal(categoryForBlockName(block), "Wood", block);
+  }
+  assert.equal(categoryForBlockName("polished_deepslate_stairs"), "Stone");
+  assert.equal(categoryForBlockName("flowering_azalea_leaves"), "Nature");
+  assert.equal(categoryForBlockName("diamond_ore"), "Ores & Minerals");
+  assert.equal(categoryForBlockName("redstone_repeater"), "Redstone");
 });
 
 test("builds canonical blocks while retaining legacy texture aliases", () => {
@@ -116,6 +127,15 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         { name:"minecraft:stone", states:{} },
       ],
     ],
+    containers:{
+      "0:0":{
+        id:"Chest",
+        items:[
+          { slot:0, name:"minecraft:diamond", count:12, damage:0, nbt:{ display:{ Name:"Treasure" }, custom_value:7 } },
+        ],
+        nbt:{ CustomName:"Supply Chest" },
+      },
+    },
   };
   const binary = await encodeMcstructure(source);
   const decoded = await decodeMcstructure(binary);
