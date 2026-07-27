@@ -134,15 +134,11 @@ export async function encodeMcstructure(model: StructureModel) {
         const rotation = entity.rotation ?? [0, 0];
         const pos = [new Float32(entity.x), new Float32(entity.y), new Float32(entity.z)];
         return {
-          blockPos:typedNbtList([new Int32(Math.floor(entity.x)), new Int32(Math.floor(entity.y)), new Int32(Math.floor(entity.z))], TAG.INT),
-          pos:typedNbtList(pos, TAG.FLOAT),
-          nbt:{
-            ...(editableNbt(entity.nbt ?? {}) as Record<string, unknown>),
-            identifier:entity.identifier,
-            Pos:typedNbtList(pos, TAG.FLOAT),
-            Rotation:typedNbtList([new Float32(rotation[0]), new Float32(rotation[1])], TAG.FLOAT),
-            UniqueID:BigInt(-(index + 1)),
-          },
+          ...(editableNbt(entity.nbt ?? {}) as Record<string, unknown>),
+          identifier:entity.identifier,
+          Pos:typedNbtList(pos, TAG.FLOAT),
+          Rotation:typedNbtList([new Float32(rotation[0]), new Float32(rotation[1])], TAG.FLOAT),
+          UniqueID:BigInt(-(index + 1)),
         };
       }), TAG.COMPOUND),
       palette:{ default:{
@@ -207,16 +203,20 @@ export async function decodeMcstructure(binary: ArrayBuffer | Uint8Array): Promi
     };
   }
   const rawEntities = Array.isArray(structure.entities) ? structure.entities as Record<string, unknown>[] : [];
+  const worldOrigin = Array.isArray(root.structure_world_origin)
+    ? (root.structure_world_origin as unknown[]).map(Number)
+    : [0, 0, 0];
   const entities = rawEntities.flatMap(entry => {
-    const nbt = (entry.nbt ?? {}) as Record<string, unknown>;
-    const rawPos = (Array.isArray(entry.pos) ? entry.pos : nbt.Pos) as unknown[] | undefined;
+    const wrapped = entry.nbt && typeof entry.nbt === "object";
+    const nbt = (wrapped ? entry.nbt : entry) as Record<string, unknown>;
+    const rawPos = (wrapped && Array.isArray(entry.pos) ? entry.pos : nbt.Pos) as unknown[] | undefined;
     if (!Array.isArray(rawPos) || rawPos.length < 3) return [];
     const rotation = Array.isArray(nbt.Rotation) ? nbt.Rotation.map(Number) : [0, 0];
     return [{
       identifier:String(nbt.identifier ?? ""),
-      x:Number(rawPos[0]),
-      y:Number(rawPos[1]),
-      z:Number(rawPos[2]),
+      x:Number(rawPos[0]) - (wrapped ? 0 : worldOrigin[0]),
+      y:Number(rawPos[1]) - (wrapped ? 0 : worldOrigin[1]),
+      z:Number(rawPos[2]) - (wrapped ? 0 : worldOrigin[2]),
       rotation:[rotation[0] ?? 0, rotation[1] ?? 0] as [number, number],
       nbt:plainNbt(Object.fromEntries(Object.entries(nbt).filter(([key]) => !["identifier", "Pos", "Rotation", "UniqueID"].includes(key)))) as Record<string, unknown>,
     }];

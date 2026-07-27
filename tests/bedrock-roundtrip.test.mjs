@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { Float32, Int32, read as readNbt, write as writeNbt } from "nbtify";
 import {
   buildStateAwareCatalog,
   categoryForBlockName,
@@ -150,4 +151,16 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   const binary = await encodeMcstructure(source);
   const decoded = await decodeMcstructure(binary);
   assert.deepEqual(decoded, source);
+
+  const parsed = await readNbt(binary, { endian:"little", compression:null });
+  const origin = [-427, 64, 307];
+  parsed.data.structure_world_origin.forEach((_, index) => { parsed.data.structure_world_origin[index] = new Int32(origin[index]); });
+  const rawEntity = parsed.data.structure.entities[0];
+  rawEntity.Pos.forEach((value, index) => { rawEntity.Pos[index] = new Float32(Number(value) + origin[index]); });
+  const absoluteBinary = await writeNbt(parsed.data, { endian:"little", compression:null, rootName:"" });
+  assert.deepEqual(
+    await decodeMcstructure(absoluteBinary),
+    source,
+    "absolute entity positions are normalized by structure_world_origin",
+  );
 });
