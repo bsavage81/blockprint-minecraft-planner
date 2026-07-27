@@ -1,4 +1,4 @@
-import { Int8, Int16, Int32, TAG, TAG_TYPE, read as readNbt, write as writeNbt } from "nbtify";
+import { Float32, Int8, Int16, Int32, TAG, TAG_TYPE, read as readNbt, write as writeNbt } from "nbtify";
 type BlockStateValue = string | number | boolean;
 
 export type StructureVariant = {
@@ -20,12 +20,22 @@ export type ContainerData = {
   nbt?: Record<string, unknown>;
 };
 
+export type StructureEntity = {
+  identifier: string;
+  x: number;
+  y: number;
+  z: number;
+  rotation?: [number, number];
+  nbt?: Record<string, unknown>;
+};
+
 export type StructureModel = {
   width: number;
   height: number;
   depth: number;
   blocks: (StructureVariant | null)[][]; // layers, row-major X/Z cells
   containers?: Record<string, ContainerData>; // "layer:cell"
+  entities?: StructureEntity[];
 };
 
 function typedNbtList<T>(values: T[], type: TAG) {
@@ -44,6 +54,7 @@ function typedStates(states: Record<string, BlockStateValue>) {
 }
 
 function plainNbt(value: unknown): unknown {
+  if (typeof value === "bigint") return Number.isSafeInteger(Number(value)) ? Number(value) : String(value);
   if (Array.isArray(value)) return value.map(plainNbt);
   if (value && typeof value === "object") {
     if ("valueOf" in value && value.valueOf() !== value && typeof value.valueOf() !== "object") return value.valueOf();
@@ -118,7 +129,21 @@ export async function encodeMcstructure(model: StructureModel) {
     size:[new Int32(model.width), new Int32(model.height), new Int32(model.depth)],
     structure:{
       block_indices:[primary, secondary],
-      entities:typedNbtList<Record<string, unknown>>([], TAG.COMPOUND),
+      entities:typedNbtList((model.entities ?? []).map((entity, index) => {
+        const rotation = entity.rotation ?? [0, 0];
+        const pos = [new Float32(entity.x), new Float32(entity.y), new Float32(entity.z)];
+        return {
+          blockPos:typedNbtList([new Int32(Math.floor(entity.x)), new Int32(Math.floor(entity.y)), new Int32(Math.floor(entity.z))], TAG.INT),
+          pos:typedNbtList(pos, TAG.FLOAT),
+          nbt:{
+            ...(editableNbt(entity.nbt ?? {}) as Record<string, unknown>),
+            identifier:entity.identifier,
+            Pos:typedNbtList(pos, TAG.FLOAT),
+            Rotation:typedNbtList([new Float32(rotation[0]), new Float32(rotation[1])], TAG.FLOAT),
+            UniqueID:BigInt(-(index + 1)),
+          },
+        };
+      }), TAG.COMPOUND),
       palette:{ default:{
         block_palette:palette.map(entry => ({ name:entry.name, states:typedStates(entry.states), version:new Int32(18168865) })),
         block_position_data:blockPositionData,
@@ -180,5 +205,20 @@ export async function decodeMcstructure(binary: ArrayBuffer | Uint8Array): Promi
       nbt:plainNbt(Object.fromEntries(Object.entries(blockEntity).filter(([key]) => !["id", "Items", "x", "y", "z"].includes(key)))) as Record<string, unknown>,
     };
   }
-  return { width, height, depth, blocks, containers };
+  const rawEntities = Array.isArray(structure.entities) ? structure.entities as Record<string, unknown>[] : [];
+  const entities = rawEntities.flatMap(entry => {
+    const nbt = (entry.nbt ?? {}) as Record<string, unknown>;
+    const rawPos = (Array.isArray(entry.pos) ? entry.pos : nbt.Pos) as unknown[] | undefined;
+    if (!Array.isArray(rawPos) || rawPos.length < 3) return [];
+    const rotation = Array.isArray(nbt.Rotation) ? nbt.Rotation.map(Number) : [0, 0];
+    return [{
+      identifier:String(nbt.identifier ?? ""),
+      x:Number(rawPos[0]),
+      y:Number(rawPos[1]),
+      z:Number(rawPos[2]),
+      rotation:[rotation[0] ?? 0, rotation[1] ?? 0] as [number, number],
+      nbt:plainNbt(Object.fromEntries(Object.entries(nbt).filter(([key]) => !["identifier", "Pos", "Rotation", "UniqueID"].includes(key)))) as Record<string, unknown>,
+    }];
+  });
+  return { width, height, depth, blocks, containers, entities };
 }

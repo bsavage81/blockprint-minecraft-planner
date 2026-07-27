@@ -136,6 +136,16 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         nbt:{ CustomName:"Supply Chest" },
       },
     },
+    entities:[
+      {
+        identifier:"minecraft:pig",
+        x:1.5,
+        y:0,
+        z:0.5,
+        rotation:[90, 0],
+        nbt:{ CustomName:"Blueprint Pig", Persistent:1 },
+      },
+    ],
   };
   const binary = await encodeMcstructure(source);
   const decoded = await decodeMcstructure(binary);

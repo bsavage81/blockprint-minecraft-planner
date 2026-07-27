@@ -1,0 +1,1632 @@
+{
+  "generatedFrom": "C:\\Users\\beauj\\Desktop\\GITHUB Repositopries\\Minecraft Resources\\bedrock-samples\\resource_pack\\entity",
+  "references": [
+    "https://minecraft.wiki/w/Entity",
+    "https://minecraft.wiki/w/Mob"
+  ],
+  "entities": [
+    {
+      "id": "minecraft:agent",
+      "name": "Agent",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/agent.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:allay",
+      "name": "Allay",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/allay.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:armadillo",
+      "name": "Armadillo",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/armadillo.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:armor_stand",
+      "name": "Armor Stand",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/armor_stand.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:arrow",
+      "name": "Arrow",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/arrow.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:axolotl",
+      "name": "Axolotl",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/axolotl.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:bat",
+      "name": "Bat",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/bat.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:bed",
+      "name": "Bed",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/bed.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:bee",
+      "name": "Bee",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/bee.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:blaze",
+      "name": "Blaze",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/blaze.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:boat",
+      "name": "Boat",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/boat.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:bogged",
+      "name": "Bogged",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/bogged.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:breeze",
+      "name": "Breeze",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/breeze.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:breeze_wind_charge_projectile",
+      "name": "Breeze Wind Charge Projectile",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/breeze_wind_charge_projectile.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:camel",
+      "name": "Camel",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/camel.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:camel_husk",
+      "name": "Camel Husk",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/camel_husk.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:cat",
+      "name": "Cat",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/cat.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:cave_spider",
+      "name": "Cave Spider",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/cave_spider.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:chest_boat",
+      "name": "Chest Boat",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/chest_boat.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:chest_minecart",
+      "name": "Chest Minecart",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/chest_minecart.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:chicken",
+      "name": "Chicken",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/chicken.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:cod",
+      "name": "Cod",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/cod.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:command_block_minecart",
+      "name": "Command Block Minecart",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/command_block_minecart.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:copper_golem",
+      "name": "Copper Golem",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/copper_golem.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:cow",
+      "name": "Cow",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/cow.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:creaking",
+      "name": "Creaking",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/creaking.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:creeper",
+      "name": "Creeper",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/creeper.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:decorated_pot",
+      "name": "Decorated Pot",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/decorated_pot.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:dolphin",
+      "name": "Dolphin",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/dolphin.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:donkey",
+      "name": "Donkey",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/donkey.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:dragon_fireball",
+      "name": "Dragon Fireball",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/dragon_fireball.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:drowned",
+      "name": "Drowned",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/drowned.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:egg",
+      "name": "Egg",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/egg.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:elder_guardian",
+      "name": "Elder Guardian",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/elder_guardian.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:enderman",
+      "name": "Enderman",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/enderman.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:endermite",
+      "name": "Endermite",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/endermite.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:ender_crystal",
+      "name": "Ender Crystal",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/ender_crystal.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:ender_dragon",
+      "name": "Ender Dragon",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/ender_dragon.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:eye_of_ender_signal",
+      "name": "Eye Of Ender Signal",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/eye_of_ender_signal.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:ender_pearl",
+      "name": "Ender Pearl",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/ender_pearl.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:evocation_fang",
+      "name": "Evocation Fang",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/evocation_fang.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:evocation_illager",
+      "name": "Evocation Illager",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/evocation_illager.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:xp_bottle",
+      "name": "Xp Bottle",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/xp_bottle.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:xp_orb",
+      "name": "Xp Orb",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/xp_orb.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:fireball",
+      "name": "Fireball",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/fireball.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:fireworks_rocket",
+      "name": "Fireworks Rocket",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/fireworks_rocket.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:fishing_hook",
+      "name": "Fishing Hook",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/fishing_hook.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:fox",
+      "name": "Fox",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/fox.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:frog",
+      "name": "Frog",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/frog.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:ghast",
+      "name": "Ghast",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/ghast.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:glow_squid",
+      "name": "Glow Squid",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/glow_squid.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:goat",
+      "name": "Goat",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/goat.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:guardian",
+      "name": "Guardian",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/guardian.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:happy_ghast",
+      "name": "Happy Ghast",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/happy_ghast.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:hoglin",
+      "name": "Hoglin",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/hoglin.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:hopper_minecart",
+      "name": "Hopper Minecart",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/hopper_minecart.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:horse",
+      "name": "Horse",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/horse.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:husk",
+      "name": "Husk",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/husk.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:iron_golem",
+      "name": "Iron Golem",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/iron_golem.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:leash_knot",
+      "name": "Leash Knot",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/leash_knot.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:lingering_potion",
+      "name": "Lingering Potion",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/lingering_potion.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:llama",
+      "name": "Llama",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/llama.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:llama_spit",
+      "name": "Llama Spit",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/llama_spit.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:magma_cube",
+      "name": "Magma Cube",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/magma_cube.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:minecart",
+      "name": "Minecart",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/minecart.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:mooshroom",
+      "name": "Mooshroom",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/mooshroom.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:mule",
+      "name": "Mule",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/mule.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:nautilus",
+      "name": "Nautilus",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/nautilus.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:npc",
+      "name": "Npc",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/npc.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:ocelot",
+      "name": "Ocelot",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/ocelot.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:panda",
+      "name": "Panda",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/panda.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:parched",
+      "name": "Parched",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/parched.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:parrot",
+      "name": "Parrot",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/parrot.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:phantom",
+      "name": "Phantom",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/phantom.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:pig",
+      "name": "Pig",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/pig.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:piglin",
+      "name": "Piglin",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/piglin.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:piglin_brute",
+      "name": "Piglin Brute",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/piglin_brute.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:pillager",
+      "name": "Pillager",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/pillager.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:player",
+      "name": "Player",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/player.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:polar_bear",
+      "name": "Polar Bear",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/polar_bear.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:pufferfish",
+      "name": "Pufferfish",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/pufferfish.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:rabbit",
+      "name": "Rabbit",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/rabbit.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:ravager",
+      "name": "Ravager",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/ravager.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:salmon",
+      "name": "Salmon",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/salmon.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:sheep",
+      "name": "Sheep",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/sheep.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:shulker",
+      "name": "Shulker",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/shulker.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:shulker_bullet",
+      "name": "Shulker Bullet",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/shulker_bullet.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:silverfish",
+      "name": "Silverfish",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/silverfish.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:skeleton",
+      "name": "Skeleton",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/skeleton.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:skeleton_horse",
+      "name": "Skeleton Horse",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/skeleton_horse.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:skull",
+      "name": "Skull",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/skull.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:slime",
+      "name": "Slime",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/slime.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:small_fireball",
+      "name": "Small Fireball",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/small_fireball.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:sniffer",
+      "name": "Sniffer",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/sniffer.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:snowball",
+      "name": "Snowball",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/snowball.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:snow_golem",
+      "name": "Snow Golem",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/snow_golem.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:spider",
+      "name": "Spider",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/spider.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:splash_potion",
+      "name": "Splash Potion",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/splash_potion.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:squid",
+      "name": "Squid",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/squid.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:stray",
+      "name": "Stray",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/stray.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:strider",
+      "name": "Strider",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/strider.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:sulfur_cube",
+      "name": "Sulfur Cube",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/sulfur_cube.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:tadpole",
+      "name": "Tadpole",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/tadpole.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:thrown_trident",
+      "name": "Thrown Trident",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/thrown_trident.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:tnt_minecart",
+      "name": "Tnt Minecart",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/tnt_minecart.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:trader_llama",
+      "name": "Trader Llama",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/trader_llama.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:trial_spawner",
+      "name": "Trial Spawner",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/trial_spawner.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:tripod_camera",
+      "name": "Tripod Camera",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/tripod_camera.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:tropicalfish",
+      "name": "Tropicalfish",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/tropicalfish.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:turtle",
+      "name": "Turtle",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/turtle.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:vex",
+      "name": "Vex",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/vex.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:villager",
+      "name": "Villager",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/villager.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:villager_v2",
+      "name": "Villager V2",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/villager_v2.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:vindicator",
+      "name": "Vindicator",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/vindicator.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wandering_trader",
+      "name": "Wandering Trader",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wandering_trader.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:warden",
+      "name": "Warden",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/warden.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wind_charge_projectile",
+      "name": "Wind Charge Projectile",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wind_charge_projectile.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:witch",
+      "name": "Witch",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/witch.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wither",
+      "name": "Wither",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wither.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wither_skeleton",
+      "name": "Wither Skeleton",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wither_skeleton.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wither_skull",
+      "name": "Wither Skull",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wither_skull.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wither_skull_dangerous",
+      "name": "Wither Skull Dangerous",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wither_skull_dangerous.png",
+      "mob": false,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:wolf",
+      "name": "Wolf",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/wolf.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zoglin",
+      "name": "Zoglin",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zoglin.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zombie",
+      "name": "Zombie",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zombie.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zombie_horse",
+      "name": "Zombie Horse",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zombie_horse.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zombie_nautilus",
+      "name": "Zombie Nautilus",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zombie_nautilus.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zombie_pigman",
+      "name": "Zombie Pigman",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zombie_pigman.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zombie_villager",
+      "name": "Zombie Villager",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zombie_villager.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:zombie_villager_v2",
+      "name": "Zombie Villager V2",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/zombie_villager_v2.png",
+      "mob": true,
+      "defaultNbt": {
+        "CustomName": "",
+        "Persistent": 1
+      }
+    },
+    {
+      "id": "minecraft:item",
+      "name": "Item",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/item.png",
+      "mob": false,
+      "defaultNbt": {}
+    },
+    {
+      "id": "minecraft:item_frame",
+      "name": "Item Frame",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/item_frame.png",
+      "mob": false,
+      "defaultNbt": {}
+    },
+    {
+      "id": "minecraft:glow_item_frame",
+      "name": "Glow Item Frame",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/glow_item_frame.png",
+      "mob": false,
+      "defaultNbt": {}
+    },
+    {
+      "id": "minecraft:painting",
+      "name": "Painting",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/painting.png",
+      "mob": false,
+      "defaultNbt": {}
+    },
+    {
+      "id": "minecraft:falling_block",
+      "name": "Falling Block",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/falling_block.png",
+      "mob": false,
+      "defaultNbt": {}
+    },
+    {
+      "id": "minecraft:primed_tnt",
+      "name": "Primed TNT",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/primed_tnt.png",
+      "mob": false,
+      "defaultNbt": {}
+    },
+    {
+      "id": "minecraft:lightning_bolt",
+      "name": "Lightning Bolt",
+      "category": "Entities",
+      "kind": "entity",
+      "image": "./bedrock/entities/lightning_bolt.png",
+      "mob": false,
+      "defaultNbt": {}
+    }
+  ]
+}

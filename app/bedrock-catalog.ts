@@ -96,6 +96,7 @@ function title(value: string) {
 }
 
 export const CATALOG_CATEGORY_ORDER = [
+  "Entities",
   "Wood",
   "Stone",
   "Nature",

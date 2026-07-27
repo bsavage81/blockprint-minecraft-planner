@@ -33,6 +33,17 @@ type Block = {
   officialStates?: string[];
   textureMatch?: "exact" | "material" | "missing";
   sourceRotation?: number;
+  kind?: "block" | "entity";
+  mob?: boolean;
+  defaultNbt?: Record<string, unknown>;
+};
+
+type EntityPlacement = {
+  identifier: string;
+  name: string;
+  image?: string;
+  rotation?: [number, number];
+  nbt: Record<string, unknown>;
 };
 
 type Blueprint = {
@@ -43,10 +54,11 @@ type Blueprint = {
   rotations?: Record<string, number>[];
   customBlocks?: Block[];
   containers?: Record<string, ContainerData>;
+  entities?: Record<string, EntityPlacement>;
 };
 
 type Selection = { start: number; end: number };
-type Clipboard = { width: number; height: number; cells: Record<string, string>; rotations: Record<string, number>; containers: Record<string, ContainerData> };
+type Clipboard = { width: number; height: number; cells: Record<string, string>; rotations: Record<string, number>; containers: Record<string, ContainerData>; entities: Record<string, EntityPlacement> };
 
 const BLOCKS: Block[] = [
   { id: "oak", name: "Oak Planks", category: "Wood", color: "#b88952", texture: "linear-gradient(0deg,#8a613c 1px,transparent 1px)" },
@@ -73,6 +85,7 @@ const EMPTY_BLUEPRINT: Blueprint = { name: "Untitled Blockprint", width: 30, dep
 
 export default function Home() {
   const [baseBlocks, setBaseBlocks] = useState<Block[]>(BLOCKS);
+  const [entityCatalog, setEntityCatalog] = useState<Block[]>([]);
   const [blueprint, setBlueprint] = useState<Blueprint>(EMPTY_BLUEPRINT);
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
@@ -100,6 +113,10 @@ export default function Home() {
   const [selectedContainerSlot, setSelectedContainerSlot] = useState(0);
   const [nbtDraft, setNbtDraft] = useState("{}");
   const [nbtError, setNbtError] = useState("");
+  const [entityPrompt, setEntityPrompt] = useState<number | null>(null);
+  const [openEntity, setOpenEntity] = useState<number | null>(null);
+  const [entityNbtDraft, setEntityNbtDraft] = useState("{}");
+  const [entityNbtError, setEntityNbtError] = useState("");
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -108,7 +125,7 @@ export default function Home() {
   const canvasViewport = useRef<HTMLDivElement | null>(null);
   const panning = useRef({ active:false, pointerId:-1, startX:0, startY:0, scrollLeft:0, scrollTop:0 });
   const [isPanning, setIsPanning] = useState(false);
-  const blocks = useMemo(() => [...baseBlocks, ...(blueprint.customBlocks ?? [])], [baseBlocks, blueprint.customBlocks]);
+  const blocks = useMemo(() => [...baseBlocks, ...(blueprint.customBlocks ?? []), ...entityCatalog], [baseBlocks, blueprint.customBlocks, entityCatalog]);
 
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");
@@ -131,6 +148,22 @@ export default function Home() {
           setSelected(catalog.find(block => !block.legacyAlias)?.id ?? catalog[0].id);
         }
       })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("./bedrock-entities.json")
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(catalog => setEntityCatalog((catalog.entities ?? []).map((entity: Record<string, unknown>) => ({
+        id:String(entity.id),
+        name:String(entity.name),
+        category:"Entities",
+        kind:"entity" as const,
+        mob:Boolean(entity.mob),
+        textureUrl:typeof entity.image === "string" ? entity.image : undefined,
+        minecraftName:String(entity.id),
+        defaultNbt:(entity.defaultNbt ?? {}) as Record<string, unknown>,
+      }))))
       .catch(() => {});
   }, []);
 
@@ -220,6 +253,7 @@ export default function Home() {
   const activeContainerBlock = openContainer === null ? undefined : blocks.find(block => block.id === current[openContainer]);
   const activeContainerSlots = containerSlotCount(activeContainerBlock?.minecraftName);
   const activeItem = activeContainer?.items.find(item => item.slot === selectedContainerSlot);
+  const activeEntity = openEntity === null ? undefined : blueprint.entities?.[containerKey(layer, openEntity)];
   const recentBlockOptions = recentBlocks
     .filter(id => id !== selected)
     .map(id => blocks.find(block => block.id === id))
@@ -309,17 +343,21 @@ export default function Home() {
     const cells: Record<string, string> = {};
     const rotations: Record<string, number> = {};
     const containers: Record<string, ContainerData> = {};
+    const entities: Record<string, EntityPlacement> = {};
     for (let y = bounds.top; y <= bounds.bottom; y++) {
       for (let x = bounds.left; x <= bounds.right; x++) {
-        const block = current[y * blueprint.width + x];
+        const cell = y * blueprint.width + x;
+        const offset = (y - bounds.top) * (bounds.right - bounds.left + 1) + (x - bounds.left);
+        const block = current[cell];
         if (block) {
-          const offset = (y - bounds.top) * (bounds.right - bounds.left + 1) + (x - bounds.left);
           cells[offset] = block;
-          const rotation = currentRotations[y * blueprint.width + x];
+          const rotation = currentRotations[cell];
           if (rotation) rotations[offset] = rotation;
-          const container = blueprint.containers?.[containerKey(layer, y * blueprint.width + x)];
+          const container = blueprint.containers?.[containerKey(layer, cell)];
           if (container) containers[offset] = structuredClone(container);
         }
+        const entity = blueprint.entities?.[containerKey(layer, cell)];
+        if (entity) entities[offset] = structuredClone(entity);
       }
     }
     const next = {
@@ -328,6 +366,7 @@ export default function Home() {
       cells,
       rotations,
       containers,
+      entities,
     };
     setClipboard(next);
     return next;
@@ -347,14 +386,16 @@ export default function Home() {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
       const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
       const containers = { ...(previous.containers ?? {}) };
+      const entities = { ...(previous.entities ?? {}) };
       for (let y = bounds.top; y <= bounds.bottom; y++) {
         for (let x = bounds.left; x <= bounds.right; x++) {
           delete layers[layer][y * previous.width + x];
           delete rotations[layer][y * previous.width + x];
           delete containers[containerKey(layer, y * previous.width + x)];
+          delete entities[containerKey(layer, y * previous.width + x)];
         }
       }
-      return { ...previous, layers, rotations, containers };
+      return { ...previous, layers, rotations, containers, entities };
     });
   }
 
@@ -368,6 +409,7 @@ export default function Home() {
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
       const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
       const containers = { ...(previous.containers ?? {}) };
+      const entities = { ...(previous.entities ?? {}) };
       for (const [offset, block] of Object.entries(clipboard.cells)) {
         const value = Number(offset);
         const x = anchorX + value % clipboard.width;
@@ -381,9 +423,17 @@ export default function Home() {
           const container = clipboard.containers[offset];
           if (container) containers[containerKey(layer, destination)] = structuredClone(container);
           else delete containers[containerKey(layer, destination)];
+          const entity = clipboard.entities[offset];
+          if (entity) entities[containerKey(layer, destination)] = structuredClone(entity);
         }
       }
-      return { ...previous, layers, rotations, containers };
+      for (const [offset, entity] of Object.entries(clipboard.entities)) {
+        const value = Number(offset);
+        const x = anchorX + value % clipboard.width;
+        const y = anchorY + Math.floor(value / clipboard.width);
+        if (x < previous.width && y < previous.depth) entities[containerKey(layer, y * previous.width + x)] = structuredClone(entity);
+      }
+      return { ...previous, layers, rotations, containers, entities };
     });
     const endX = Math.min(blueprint.width - 1, anchorX + clipboard.width - 1);
     const endY = Math.min(blueprint.depth - 1, anchorY + clipboard.height - 1);
@@ -416,16 +466,23 @@ export default function Home() {
     const indices = lineIndices(lineStart.current, lineEnd.current);
     checkpoint();
     setBlueprint(previous => {
+      if (selectedBlock?.kind === "entity") {
+        const entities = { ...(previous.entities ?? {}) };
+        indices.forEach(index => { entities[containerKey(layer, index)] = placementForEntityBlock(selectedBlock); });
+        return { ...previous, entities };
+      }
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
       const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
       const containers = { ...(previous.containers ?? {}) };
+      const entities = { ...(previous.entities ?? {}) };
       indices.forEach(index => {
         layers[layer][index] = selected;
         if (selectedRotation) rotations[layer][index] = selectedRotation;
         else delete rotations[layer][index];
         delete containers[containerKey(layer, index)];
+        delete entities[containerKey(layer, index)];
       });
-      return { ...previous, layers, rotations, containers };
+      return { ...previous, layers, rotations, containers, entities };
     });
     lining.current = false;
     lineStart.current = null;
@@ -453,16 +510,23 @@ export default function Home() {
     if (!visited.size) return;
     checkpoint();
     setBlueprint(previous => {
+      if (selectedBlock?.kind === "entity") {
+        const entities = { ...(previous.entities ?? {}) };
+        visited.forEach(index => { entities[containerKey(layer, index)] = placementForEntityBlock(selectedBlock); });
+        return { ...previous, entities };
+      }
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
       const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({}))).map((item, index) => index === layer ? { ...item } : item);
       const containers = { ...(previous.containers ?? {}) };
+      const entities = { ...(previous.entities ?? {}) };
       visited.forEach(index => {
         layers[layer][index] = selected;
         if (selectedRotation) rotations[layer][index] = selectedRotation;
         else delete rotations[layer][index];
         delete containers[containerKey(layer, index)];
+        delete entities[containerKey(layer, index)];
       });
-      return { ...previous, layers, rotations, containers };
+      return { ...previous, layers, rotations, containers, entities };
     });
   }
 
@@ -479,17 +543,24 @@ export default function Home() {
     if (!changed) return;
     checkpoint();
     setBlueprint(previous => {
+      if (selectedBlock?.kind === "entity") {
+        const entities = { ...(previous.entities ?? {}) };
+        indices.forEach(index => { entities[containerKey(layer, index)] = placementForEntityBlock(selectedBlock); });
+        return { ...previous, entities };
+      }
       const layers = previous.layers.map((item, index) => index === layer ? { ...item } : item);
       const rotations = (previous.rotations ?? previous.layers.map<Record<string, number>>(() => ({})))
         .map((item, index) => index === layer ? { ...item } : item);
       const containers = { ...(previous.containers ?? {}) };
+      const entities = { ...(previous.entities ?? {}) };
       indices.forEach(index => {
         layers[layer][index] = selected;
         if (selectedRotation) rotations[layer][index] = selectedRotation;
         else delete rotations[layer][index];
         delete containers[containerKey(layer, index)];
+        delete entities[containerKey(layer, index)];
       });
-      return { ...previous, layers, rotations, containers };
+      return { ...previous, layers, rotations, containers, entities };
     });
   }
 
@@ -497,17 +568,58 @@ export default function Home() {
     setBlueprint(prev => {
       const layers = prev.layers.map((l, i) => i === layer ? { ...l } : l);
       const rotations = (prev.rotations ?? prev.layers.map<Record<string, number>>(() => ({}))).map((item, i) => i === layer ? { ...item } : item);
+      const entities = { ...(prev.entities ?? {}) };
+      const key = containerKey(layer, index);
+      const selectedPaletteItem = blocks.find(item => item.id === selected);
+      if (selectedPaletteItem?.kind === "entity" && tool !== "erase") {
+        entities[key] = placementForEntityBlock(selectedPaletteItem);
+        return { ...prev, entities };
+      }
       if (tool === "erase") {
-        delete layers[layer][index];
-        delete rotations[layer][index];
+        if (entities[key]) delete entities[key];
+        else {
+          delete layers[layer][index];
+          delete rotations[layer][index];
+        }
       } else {
+        delete entities[key];
         layers[layer][index] = selected;
         if (selectedRotation) rotations[layer][index] = selectedRotation;
         else delete rotations[layer][index];
       }
       const containers = { ...(prev.containers ?? {}) };
       delete containers[containerKey(layer, index)];
-      return { ...prev, layers, rotations, containers };
+      return { ...prev, layers, rotations, containers, entities };
+    });
+  }
+
+  function placementForEntityBlock(entity: Block): EntityPlacement {
+    return {
+      identifier:entity.id,
+      name:entity.name,
+      image:entity.textureUrl,
+      rotation:[selectedRotation, 0],
+      nbt:structuredClone(entity.defaultNbt ?? {}),
+    };
+  }
+
+  function openEntityEditor(index: number) {
+    const entity = blueprint.entities?.[containerKey(layer, index)];
+    if (!entity) return;
+    setEntityNbtDraft(JSON.stringify(entity.nbt ?? {}, null, 2));
+    setEntityNbtError("");
+    setEntityPrompt(null);
+    setOpenEntity(index);
+  }
+
+  function updateEntity(changes: Partial<EntityPlacement>) {
+    if (openEntity === null) return;
+    checkpoint();
+    setBlueprint(previous => {
+      const key = containerKey(layer, openEntity);
+      const entity = previous.entities?.[key];
+      if (!entity) return previous;
+      return { ...previous, entities:{ ...(previous.entities ?? {}), [key]:{ ...entity, ...changes } } };
     });
   }
 
@@ -602,7 +714,7 @@ export default function Home() {
     setRecentBlocks(previous => [blockId, selected, ...previous].filter((id, index, items) => items.indexOf(id) === index).slice(0, 11));
     setSelected(blockId);
     setSelectedRotation(blocks.find(block => block.id === blockId)?.sourceRotation ?? 0);
-    if (tool !== "replace") setTool("paint");
+    if (blocks.find(block => block.id === blockId)?.kind === "entity" || tool !== "replace") setTool("paint");
   }
 
   function setSelectedBlockState(stateName: string, value: string | number | boolean) {
@@ -679,6 +791,12 @@ export default function Home() {
         const z = Math.floor(oldIndex / prev.width);
         return x < width && z < depth ? [[`${containerLayer}:${z * width + x}`, value]] : [];
       })),
+      entities:Object.fromEntries(Object.entries(prev.entities ?? {}).flatMap(([key, value]) => {
+        const [entityLayer, oldIndex] = key.split(":").map(Number);
+        const x = oldIndex % prev.width;
+        const z = Math.floor(oldIndex / prev.width);
+        return x < width && z < depth ? [[`${entityLayer}:${z * width + x}`, value]] : [];
+      })),
     }));
     setSelection(null);
   }
@@ -717,7 +835,14 @@ export default function Home() {
         if (copy && containerLayer === layer) entries.push([`${layer + 1}:${cell}`, structuredClone(value)]);
         return entries;
       }));
-      return { ...prev, layers, rotations, containers };
+      const entities = Object.fromEntries(Object.entries(prev.entities ?? {}).flatMap(([key, value]) => {
+        const [entityLayer, cell] = key.split(":").map(Number);
+        const shiftedLayer = entityLayer > layer ? entityLayer + 1 : entityLayer;
+        const entries: [string, EntityPlacement][] = [[`${shiftedLayer}:${cell}`, value]];
+        if (copy && entityLayer === layer) entries.push([`${layer + 1}:${cell}`, structuredClone(value)]);
+        return entries;
+      }));
+      return { ...prev, layers, rotations, containers, entities };
     });
     setLayer(layer + 1);
   }
@@ -733,6 +858,11 @@ export default function Home() {
         const [containerLayer, cell] = key.split(":").map(Number);
         if (containerLayer === layer) return [];
         return [[`${containerLayer > layer ? containerLayer - 1 : containerLayer}:${cell}`, value]];
+      })),
+      entities:Object.fromEntries(Object.entries(prev.entities ?? {}).flatMap(([key, value]) => {
+        const [entityLayer, cell] = key.split(":").map(Number);
+        if (entityLayer === layer) return [];
+        return [[`${entityLayer > layer ? entityLayer - 1 : entityLayer}:${cell}`, value]];
       })),
     }));
     setLayer(Math.max(0, layer - 1));
@@ -1005,6 +1135,17 @@ export default function Home() {
             };
           })),
         containers:blueprint.containers,
+        entities:Object.entries(blueprint.entities ?? {}).map(([key, entity]) => {
+          const [entityLayer, cell] = key.split(":").map(Number);
+          return {
+            identifier:entity.identifier,
+            x:cell % blueprint.width + 0.5,
+            y:entityLayer,
+            z:Math.floor(cell / blueprint.width) + 0.5,
+            rotation:entity.rotation,
+            nbt:entity.nbt,
+          };
+        }),
       });
       await readNbt(binary, { endian:"little", compression:null });
       const downloadable = new Uint8Array(binary.byteLength);
@@ -1166,6 +1307,20 @@ export default function Home() {
       const z = Math.floor(cell / sizeX);
       return [`${containerLayer}:${z * width + x}`, value];
     }));
+    const entities = Object.fromEntries((decoded.entities ?? []).flatMap(entity => {
+      const x = Math.floor(entity.x);
+      const entityLayer = Math.floor(entity.y);
+      const z = Math.floor(entity.z);
+      if (x < 0 || x >= width || entityLayer < 0 || entityLayer >= sizeY || z < 0 || z >= depth) return [];
+      const definition = entityCatalog.find(candidate => candidate.id === entity.identifier);
+      return [[`${entityLayer}:${z * width + x}`, {
+        identifier:entity.identifier,
+        name:definition?.name ?? entity.identifier.replace(/^minecraft:/, "").split("_").map(word => word[0]?.toUpperCase() + word.slice(1)).join(" "),
+        image:definition?.textureUrl,
+        rotation:entity.rotation,
+        nbt:entity.nbt ?? {},
+      } satisfies EntityPlacement]];
+    }));
 
     checkpoint();
     const filename = file.name.replace(/\.mcstructure$/i, "");
@@ -1176,6 +1331,7 @@ export default function Home() {
       layers,
       rotations,
       containers,
+      entities,
       customBlocks:[...importedVariants.values()],
     });
     setLayer(0);
@@ -1238,7 +1394,11 @@ export default function Home() {
         <aside className={`palette-panel ${paletteCollapsed ? "collapsed" : ""}`}>
           <button className="sidebar-toggle palette-toggle" onClick={() => setPaletteCollapsed(value => !value)} aria-label={paletteCollapsed ? "Expand block palette" : "Minimize block palette"} title={paletteCollapsed ? "Expand block palette" : "Minimize block palette"}>{paletteCollapsed ? "›" : "‹"}</button>
           <div className="panel-heading"><div><span className="eyebrow">Bedrock catalog</span><h2>Block palette</h2></div><span className="count">{blocks.filter(block => !block.legacyAlias).length}</span></div>
-          {selectedBlock?.minecraftName && <section className="palette-block-state">
+          {selectedBlock?.kind === "entity" ? <section className="palette-block-state">
+            <span className="eyebrow">{selectedBlock.mob ? "Bedrock mob entity" : "Bedrock entity"}</span><h2>{selectedBlock.name}</h2>
+            <code className="block-identifier">{selectedBlock.id}</code>
+            <p className="empty-state">Paint this entity onto a layer, then click it and choose View to edit its NBT.</p>
+          </section> : selectedBlock?.minecraftName && <section className="palette-block-state">
             <span className="eyebrow">Bedrock block</span><h2>{blockLabel(selectedBlock)}</h2>
             <code className="block-identifier">{selectedBlock.minecraftName}</code>
             {selectedBlock.stateDefinitions?.length ? <div className="state-controls">
@@ -1374,6 +1534,7 @@ export default function Home() {
               }}>
               {Array.from({ length: blueprint.width * blueprint.depth }, (_, index) => {
                 const currentBlock = blocks.find(b => b.id === current[index]);
+                const currentEntity = blueprint.entities?.[containerKey(layer, index)];
                 let lowerLayerIndex = -1;
                 if (!currentBlock && showPreviousLayers && layer > 0) {
                   for (let candidate = layer - 1; candidate >= 0; candidate--) {
@@ -1386,13 +1547,16 @@ export default function Home() {
                 const displayRotation = currentBlock
                   ? currentRotations[index] ?? 0
                   : lowerLayerIndex >= 0 ? blueprint.rotations?.[lowerLayerIndex]?.[index] ?? 0 : 0;
-                return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentBlock ? `, ${blockLabel(currentBlock)}` : lowerBlock ? `, ${blockLabel(lowerBlock)} from lower layer` : ", empty"}`}
-                  title={currentBlock ? blockLabel(currentBlock) : lowerBlock ? `${blockLabel(lowerBlock)} (lower layer)` : undefined}
-                  className={`cell ${currentBlock ? "filled" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
+                return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentEntity ? `, ${currentEntity.name} entity` : currentBlock ? `, ${blockLabel(currentBlock)}` : lowerBlock ? `, ${blockLabel(lowerBlock)} from lower layer` : ", empty"}`}
+                  title={currentEntity ? `${currentEntity.name} entity` : currentBlock ? blockLabel(currentBlock) : lowerBlock ? `${blockLabel(lowerBlock)} (lower layer)` : undefined}
+                  className={`cell ${currentBlock ? "filled" : ""} ${currentEntity ? "has-entity" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
                   onPointerDown={e => {
                     if (tool === "grab") return;
                     e.preventDefault();
-                    if (tool === "paint" && currentBlock && isContainerBlock(currentBlock)) {
+                    if (tool === "paint" && currentEntity) {
+                      setEntityPrompt(index);
+                      painting.current = false;
+                    } else if (tool === "paint" && currentBlock && isContainerBlock(currentBlock)) {
                       setContainerPrompt(index);
                       painting.current = false;
                     } else if (e.altKey || tool === "picker") {
@@ -1430,6 +1594,9 @@ export default function Home() {
                     transform:`rotate(${displayRotation}deg)`
                   }} />}
                   {currentBlock && isContainerBlock(currentBlock) && <span className="container-badge" aria-hidden="true">◆</span>}
+                  {currentEntity && <span className="entity-surface" style={currentEntity.image ? { backgroundImage:`url(${currentEntity.image})` } : undefined}>
+                    {!currentEntity.image && currentEntity.name.slice(0, 2).toUpperCase()}
+                  </span>}
                 </button>;
               })}
             </div>
@@ -1580,6 +1747,68 @@ export default function Home() {
             </div>
           </div>
           <footer><span>{activeContainer.items.length} occupied of {activeContainerSlots} slots</span><button className="button primary" onClick={() => setOpenContainer(null)}>Done</button></footer>
+        </section>
+      </div>}
+      {entityPrompt !== null && <div className="modal-backdrop" role="presentation" onPointerDown={() => setEntityPrompt(null)}>
+        <section className="container-choice" role="dialog" aria-modal="true" aria-labelledby="entity-choice-title" onPointerDown={event => event.stopPropagation()}>
+          <span className="eyebrow">Placed entity</span>
+          <h2 id="entity-choice-title">{blueprint.entities?.[containerKey(layer, entityPrompt)]?.name ?? "Entity"}</h2>
+          <p>Would you like to replace this entity with the selected palette item, or view and edit its entity data?</p>
+          <div className="modal-actions">
+            <button className="button secondary" onClick={() => setEntityPrompt(null)}>Cancel</button>
+            <button className="button secondary" onClick={() => {
+              checkpoint();
+              paintCell(entityPrompt);
+              setEntityPrompt(null);
+            }}>Paint</button>
+            <button className="button primary" onClick={() => openEntityEditor(entityPrompt)}>View</button>
+          </div>
+        </section>
+      </div>}
+      {openEntity !== null && activeEntity && <div className="modal-backdrop" role="presentation">
+        <section className="entity-editor" role="dialog" aria-modal="true" aria-labelledby="entity-editor-title">
+          <header>
+            <div><span className="eyebrow">Entity data</span><h2 id="entity-editor-title">{activeEntity.name}</h2></div>
+            <button className="modal-close" onClick={() => setOpenEntity(null)} aria-label="Close entity editor">×</button>
+          </header>
+          <div className="entity-editor-body">
+            <div className="entity-preview">
+              {activeEntity.image ? <span style={{ backgroundImage:`url(${activeEntity.image})` }} /> : <strong>{activeEntity.name.slice(0, 2).toUpperCase()}</strong>}
+              <code>{activeEntity.identifier}</code>
+            </div>
+            <div>
+              <div className="item-numbers">
+                <label className="field"><span>Yaw</span><input type="number" value={activeEntity.rotation?.[0] ?? 0}
+                  onChange={event => updateEntity({ rotation:[Number(event.target.value), activeEntity.rotation?.[1] ?? 0] })} /></label>
+                <label className="field"><span>Pitch</span><input type="number" value={activeEntity.rotation?.[1] ?? 0}
+                  onChange={event => updateEntity({ rotation:[activeEntity.rotation?.[0] ?? 0, Number(event.target.value)] })} /></label>
+              </div>
+              <label className="field"><span>Entity NBT (JSON)</span>
+                <textarea rows={14} value={entityNbtDraft} onChange={event => {
+                  const value = event.target.value;
+                  setEntityNbtDraft(value);
+                  try {
+                    const parsed = JSON.parse(value);
+                    if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error();
+                    setEntityNbtError("");
+                    updateEntity({ nbt:parsed });
+                  } catch {
+                    setEntityNbtError("Enter a valid JSON object. The last valid entity NBT is preserved.");
+                  }
+                }} />
+              </label>
+              {entityNbtError && <p className="field-error">{entityNbtError}</p>}
+            </div>
+          </div>
+          <footer><button className="remove-item" onClick={() => {
+            checkpoint();
+            setBlueprint(previous => {
+              const entities = { ...(previous.entities ?? {}) };
+              delete entities[containerKey(layer, openEntity)];
+              return { ...previous, entities };
+            });
+            setOpenEntity(null);
+          }}>Remove entity</button><button className="button primary" onClick={() => setOpenEntity(null)}>Done</button></footer>
         </section>
       </div>}
     </main>
