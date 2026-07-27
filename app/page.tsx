@@ -125,6 +125,7 @@ export default function Home() {
   const [nbtError, setNbtError] = useState("");
   const [entityPrompt, setEntityPrompt] = useState<number | null>(null);
   const [openEntity, setOpenEntity] = useState<number | null>(null);
+  const [movingEntity, setMovingEntity] = useState<{ layer:number; index:number } | null>(null);
   const painting = useRef(false);
   const selecting = useRef(false);
   const lining = useRef(false);
@@ -197,6 +198,8 @@ export default function Home() {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
+        setMovingEntity(null);
+        setEntityPrompt(null);
         setSelection(null);
         selecting.current = false;
         return;
@@ -1565,7 +1568,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className={`canvas-scroll ${tool === "grab" ? "grab-mode" : ""} ${isPanning ? "is-panning" : ""}`} ref={canvasViewport}
+          <div className={`canvas-scroll ${tool === "grab" ? "grab-mode" : ""} ${isPanning ? "is-panning" : ""} ${movingEntity ? "move-entity-mode" : ""}`} ref={canvasViewport}
             onPointerDown={event => {
               if (tool !== "grab") return;
               event.preventDefault();
@@ -1633,7 +1636,24 @@ export default function Home() {
                   onPointerDown={e => {
                     if (tool === "grab") return;
                     e.preventDefault();
-                    if (tool === "paint" && currentEntity) {
+                    if (movingEntity) {
+                      const destinationKey = containerKey(layer, index);
+                      const sourceKey = containerKey(movingEntity.layer, movingEntity.index);
+                      if (destinationKey !== sourceKey && blueprint.entities?.[destinationKey]) {
+                        window.alert("That cell already contains an entity. Choose an empty destination or press Esc to cancel.");
+                        return;
+                      }
+                      checkpoint();
+                      setBlueprint(previous => {
+                        const entities = { ...(previous.entities ?? {}) };
+                        const entity = entities[sourceKey];
+                        if (!entity) return previous;
+                        delete entities[sourceKey];
+                        entities[destinationKey] = entity;
+                        return { ...previous, entities };
+                      });
+                      setMovingEntity(null);
+                    } else if (tool === "paint" && currentEntity) {
                       setEntityPrompt(index);
                       painting.current = false;
                     } else if (tool === "paint" && currentBlock && isContainerBlock(currentBlock)) {
@@ -1684,7 +1704,7 @@ export default function Home() {
           <div className="canvas-footer">
             <span>{blueprint.width} × {blueprint.depth} blocks</span>
             <span>{Object.keys(current).length} blocks on this layer</span>
-            <span>{selection ? "Selection active" : "No selection"}</span>
+            <span>{movingEntity ? "Moving entity — click destination or press Esc" : selection ? "Selection active" : "No selection"}</span>
             <span>Auto-saved on this device</span>
           </div>
         </section>
@@ -1833,15 +1853,23 @@ export default function Home() {
         <section className="container-choice" role="dialog" aria-modal="true" aria-labelledby="entity-choice-title" onPointerDown={event => event.stopPropagation()}>
           <span className="eyebrow">Placed entity</span>
           <h2 id="entity-choice-title">{blueprint.entities?.[containerKey(layer, entityPrompt)]?.name ?? "Entity"}</h2>
-          <p>Would you like to replace this entity with the selected palette item, or view and edit its entity data?</p>
+          <p>Move this entity to another cell, delete it from the blueprint, or edit its rotation and NBT.</p>
           <div className="modal-actions">
             <button className="button secondary" onClick={() => setEntityPrompt(null)}>Cancel</button>
             <button className="button secondary" onClick={() => {
-              checkpoint();
-              paintCell(entityPrompt);
+              setMovingEntity({ layer, index:entityPrompt });
               setEntityPrompt(null);
-            }}>Paint</button>
-            <button className="button primary" onClick={() => openEntityEditor(entityPrompt)}>View</button>
+            }}>Move</button>
+            <button className="button danger-button" onClick={() => {
+              checkpoint();
+              setBlueprint(previous => {
+                const entities = { ...(previous.entities ?? {}) };
+                delete entities[containerKey(layer, entityPrompt)];
+                return { ...previous, entities };
+              });
+              setEntityPrompt(null);
+            }}>Delete</button>
+            <button className="button primary" onClick={() => openEntityEditor(entityPrompt)}>Edit</button>
           </div>
         </section>
       </div>}
