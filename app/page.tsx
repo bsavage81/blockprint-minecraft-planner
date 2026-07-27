@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { jsPDF } from "jspdf";
-import { Int32, TAG, TAG_TYPE, read as readNbt, write as writeNbt } from "nbtify";
+import { Int32, read as readNbt } from "nbtify";
+import {
+  buildStateAwareCatalog,
+  textureForFace,
+  variantId,
+  type BlockStateDefinition,
+} from "./bedrock-catalog";
+import { encodeMcstructure } from "./mcstructure-codec";
 
 type Block = {
   id: string;
@@ -13,6 +20,9 @@ type Block = {
   textureUrl?: string;
   minecraftName?: string;
   minecraftStates?: Record<string, string | number | boolean>;
+  stateDefinitions?: BlockStateDefinition[];
+  textures?: Partial<Record<"up" | "down" | "north" | "south" | "east" | "west" | "side", string>>;
+  legacyAlias?: boolean;
   sourceRotation?: number;
 };
 
@@ -96,8 +106,9 @@ export default function Home() {
       .then(response => response.ok ? response.json() : Promise.reject())
       .then(data => {
         if (Array.isArray(data.blocks) && data.blocks.length) {
-          setBaseBlocks(data.blocks);
-          setSelected(data.blocks[0].id);
+          const catalog = buildStateAwareCatalog(data.blocks);
+          setBaseBlocks(catalog);
+          setSelected(catalog.find(block => !block.legacyAlias)?.id ?? catalog[0].id);
         }
       })
       .catch(() => {});
@@ -163,7 +174,7 @@ export default function Home() {
   });
 
   const categories = ["All", ...Array.from(new Set(blocks.map(b => b.category)))];
-  const visibleBlocks = blocks.filter(b =>
+  const visibleBlocks = blocks.filter(b => !b.legacyAlias &&
     (category === "All" || b.category === category) &&
     b.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -405,6 +416,28 @@ export default function Home() {
     setSelected(blockId);
     setSelectedRotation(blocks.find(block => block.id === blockId)?.sourceRotation ?? 0);
     setTool("paint");
+  }
+
+  function setSelectedBlockState(stateName: string, value: string | number | boolean) {
+    if (!selectedBlock?.minecraftName) return;
+    const minecraftStates = { ...(selectedBlock.minecraftStates ?? {}), [stateName]:value };
+    const id = variantId(selectedBlock.minecraftName, minecraftStates);
+    const configured: Block = {
+      ...selectedBlock,
+      id,
+      category:"Configured",
+      minecraftStates,
+      textureUrl:textureForFace({ ...selectedBlock, minecraftStates }, "up"),
+      legacyAlias:false,
+    };
+    setBlueprint(previous => ({
+      ...previous,
+      customBlocks:[
+        ...(previous.customBlocks ?? []).filter(block => block.id !== id),
+        configured,
+      ],
+    }));
+    chooseBlock(id);
   }
 
   function pickBlock(index: number) {
@@ -761,74 +794,24 @@ export default function Home() {
     return Object.fromEntries(Object.entries(states).map(([key, value]) => [key, typeof value === "number" ? new Int32(value) : value]));
   }
 
-  function typedNbtList<T>(values: T[], type: TAG) {
-    Object.defineProperty(values, TAG_TYPE, { value:type, enumerable:false });
-    return values;
-  }
-
   async function exportMcstructure() {
     setExporting("mcstructure");
     try {
-      const paletteEntries: { name: string; states: Record<string, unknown> }[] = [{ name:"minecraft:air", states:{} }];
-      const paletteBySignature = new Map<string, number>([["minecraft:air|{}", 0]]);
-      const paletteByVariant = new Map<string, number>();
-      blueprint.layers.forEach((layerData, layerIndex) => {
-        for (const [cellIndex, blockId] of Object.entries(layerData)) {
-          const rotation = blueprint.rotations?.[layerIndex]?.[cellIndex] ?? 0;
-          const variantKey = `${blockId}@${rotation}`;
-          if (paletteByVariant.has(variantKey)) continue;
-          const minecraftName = minecraftNameForBlock(blockId);
-          const states = rotatedMinecraftStates(blockId, rotation);
-          const signature = `${minecraftName}|${JSON.stringify(states, (_, value) => value instanceof Number ? value.valueOf() : value)}`;
-          let paletteIndex = paletteBySignature.get(signature);
-          if (paletteIndex === undefined) {
-            paletteIndex = paletteEntries.length;
-            paletteEntries.push({ name:minecraftName, states });
-            paletteBySignature.set(signature, paletteIndex);
-          }
-          paletteByVariant.set(variantKey, paletteIndex);
-        }
+      const binary = await encodeMcstructure({
+        width:blueprint.width,
+        height:blueprint.layers.length,
+        depth:blueprint.depth,
+        blocks:blueprint.layers.map((layerData, layerIndex) =>
+          Array.from({ length:blueprint.width * blueprint.depth }, (_, cellIndex) => {
+            const blockId = layerData[cellIndex];
+            if (!blockId) return null;
+            const states = rotatedMinecraftStates(blockId, blueprint.rotations?.[layerIndex]?.[cellIndex] ?? 0);
+            return {
+              name:minecraftNameForBlock(blockId),
+              states:Object.fromEntries(Object.entries(states).map(([key, value]) => [key, value instanceof Number ? value.valueOf() : value])),
+            };
+          })),
       });
-
-      const primary: Int32[] = [];
-      const secondary: Int32[] = [];
-      for (let x = 0; x < blueprint.width; x++) {
-        for (let y = 0; y < blueprint.layers.length; y++) {
-          for (let z = 0; z < blueprint.depth; z++) {
-            const blockId = blueprint.layers[y][z * blueprint.width + x];
-            const cellIndex = z * blueprint.width + x;
-            const rotation = blueprint.rotations?.[y]?.[cellIndex] ?? 0;
-            primary.push(new Int32(blockId ? (paletteByVariant.get(`${blockId}@${rotation}`) ?? 0) : 0));
-            secondary.push(new Int32(-1));
-          }
-        }
-      }
-
-      const entities = typedNbtList<Record<string, unknown>>([], TAG.COMPOUND);
-      const root = {
-        format_version:new Int32(1),
-        size:[
-          new Int32(blueprint.width),
-          new Int32(blueprint.layers.length),
-          new Int32(blueprint.depth),
-        ],
-        structure:{
-          block_indices:[primary, secondary],
-          entities,
-          palette:{
-            default:{
-              block_palette:paletteEntries.map(entry => ({
-                name:entry.name,
-                states:entry.states,
-                version:new Int32(18168865),
-              })),
-              block_position_data:{},
-            },
-          },
-        },
-        structure_world_origin:[new Int32(0), new Int32(0), new Int32(0)],
-      };
-      const binary = await writeNbt(root, { endian:"little", compression:null, rootName:"" });
       await readNbt(binary, { endian:"little", compression:null });
       const downloadable = new Uint8Array(binary.byteLength);
       downloadable.set(binary);
@@ -1045,7 +1028,7 @@ export default function Home() {
       <section className={`workspace ${paletteCollapsed ? "left-collapsed" : ""} ${detailsCollapsed ? "right-collapsed" : ""}`}>
         <aside className={`palette-panel ${paletteCollapsed ? "collapsed" : ""}`}>
           <button className="sidebar-toggle palette-toggle" onClick={() => setPaletteCollapsed(value => !value)} aria-label={paletteCollapsed ? "Expand block palette" : "Minimize block palette"} title={paletteCollapsed ? "Expand block palette" : "Minimize block palette"}>{paletteCollapsed ? "›" : "‹"}</button>
-          <div className="panel-heading"><div><span className="eyebrow">Bedrock samples</span><h2>Block palette</h2></div><span className="count">{blocks.length}</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">Bedrock catalog</span><h2>Block palette</h2></div><span className="count">{blocks.filter(block => !block.legacyAlias).length}</span></div>
           <input className="search" placeholder="Search blocks…" value={search} onChange={e => setSearch(e.target.value)} />
           <div className="category-tabs">
             {categories.map(c => <button key={c} className={category === c ? "active" : ""} onClick={() => setCategory(c)}>{c}</button>)}
@@ -1056,8 +1039,8 @@ export default function Home() {
                 onClick={() => chooseBlock(block.id)}>
                 <span className="block-swatch" style={{
                   backgroundColor:block.color,
-                  backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
-                  backgroundSize:block.textureUrl ? "cover" : undefined
+                  backgroundImage:textureForFace(block, "up") ? `url(${textureForFace(block, "up")})` : block.texture,
+                  backgroundSize:textureForFace(block, "up") ? "cover" : undefined
                 }} />
                 <span><strong>{block.name}</strong><small>{block.category}</small></span>
               </button>
@@ -1247,6 +1230,22 @@ export default function Home() {
               </div>
             </div>
           </section>
+          {selectedBlock?.minecraftName && <section className="block-state-panel">
+            <span className="eyebrow">Bedrock block</span><h2>{selectedBlock.name}</h2>
+            <code className="block-identifier">{selectedBlock.minecraftName}</code>
+            {selectedBlock.stateDefinitions?.length ? <div className="state-controls">
+              {selectedBlock.stateDefinitions.map(definition => <label className="field" key={definition.name}>
+                <span>{definition.name}</span>
+                <select value={String(selectedBlock.minecraftStates?.[definition.name] ?? definition.values[0])}
+                  onChange={event => {
+                    const chosen = definition.values.find(value => String(value) === event.target.value) ?? definition.values[0];
+                    setSelectedBlockState(definition.name, chosen);
+                  }}>
+                  {definition.values.map(value => <option key={String(value)} value={String(value)}>{String(value)}</option>)}
+                </select>
+              </label>)}
+            </div> : <p className="empty-state">This block has no editable placement states.</p>}
+          </section>}
           <section>
             <span className="eyebrow">Blueprint</span><h2>Build setup</h2>
             <form className="field" onSubmit={event => { event.preventDefault(); applyCanvasSize(); }}>
