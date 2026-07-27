@@ -478,6 +478,7 @@ export default function Home() {
   function setSelectedBlockState(stateName: string, value: string | number | boolean) {
     if (!selectedBlock?.minecraftName) return;
     const minecraftStates = { ...(selectedBlock.minecraftStates ?? {}), [stateName]:value };
+    const stateRotation = rotationFromStates(minecraftStates);
     const id = variantId(selectedBlock.minecraftName, minecraftStates);
     const configured: Block = {
       ...selectedBlock,
@@ -485,6 +486,7 @@ export default function Home() {
       category:"Configured",
       minecraftStates,
       textureUrl:textureForFace({ ...selectedBlock, minecraftStates }, "up"),
+      sourceRotation:stateRotation,
       legacyAlias:false,
     };
     setBlueprint(previous => ({
@@ -494,8 +496,10 @@ export default function Home() {
         configured,
       ],
     }));
-    setSelectedRotation(rotationFromStates(minecraftStates));
     chooseBlock(id);
+    // The configured block is not in `blocks` until the state update renders,
+    // so apply its rotation after chooseBlock's lookup-based default.
+    setSelectedRotation(stateRotation);
   }
 
   function pickBlock(index: number) {
@@ -1098,7 +1102,8 @@ export default function Home() {
                 <span className="block-swatch" style={{
                   backgroundColor:block.color,
                   backgroundImage:textureForFace(block, "up") ? `url(${textureForFace(block, "up")})` : block.texture,
-                  backgroundSize:textureForFace(block, "up") ? "cover" : undefined
+                  backgroundSize:textureForFace(block, "up") ? "cover" : undefined,
+                  transform:`rotate(${block.sourceRotation ?? rotationFromStates(block.minecraftStates ?? {})}deg)`
                 }} />
                 <span><strong>{blockLabel(block)}</strong><small>{block.textureMatch === "missing" ? `${block.category} · texture needed` : block.category}</small></span>
               </button>
@@ -1147,7 +1152,8 @@ export default function Home() {
                   <span className="history-swatch" style={{
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
-                    backgroundSize:block.textureUrl ? "cover" : undefined
+                    backgroundSize:block.textureUrl ? "cover" : undefined,
+                    transform:`rotate(${block.sourceRotation ?? rotationFromStates(block.minecraftStates ?? {})}deg)`
                   }} />
                 </button>) : <span className="recent-empty">Your recent blocks will appear here.</span>}
               </div>
@@ -1319,7 +1325,8 @@ export default function Home() {
                   <span className="mini-swatch" style={{
                     backgroundColor:block.color,
                     backgroundImage:block.textureUrl ? `url(${block.textureUrl})` : block.texture,
-                    backgroundSize:block.textureUrl ? "cover" : undefined
+                    backgroundSize:block.textureUrl ? "cover" : undefined,
+                    transform:`rotate(${block.sourceRotation ?? rotationFromStates(block.minecraftStates ?? {})}deg)`
                   }}/><span>{blockLabel(block)}</span><strong>{amount}</strong>
                 </button></li>;
               })}</ol>}

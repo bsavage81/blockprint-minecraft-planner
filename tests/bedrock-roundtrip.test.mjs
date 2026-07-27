@@ -70,6 +70,8 @@ test("selects state-specific textures and rotates official Bedrock direction sta
   assert.equal(textureForFace({ ...campfire, minecraftStates:{ extinguished:true } }), "campfire-off.png");
 
   assert.equal(rotationFromBlockStates({ "minecraft:cardinal_direction":"east" }), 90);
+  assert.equal(rotationFromBlockStates({ pillar_axis:"x" }), 90);
+  assert.equal(rotationFromBlockStates({ pillar_axis:"z" }), 0);
   assert.deepEqual(
     rotateBlockStates({ "minecraft:cardinal_direction":"north", pillar_axis:"x" }, 90),
     { "minecraft:cardinal_direction":"east", pillar_axis:"z" },
