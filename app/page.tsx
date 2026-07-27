@@ -6,6 +6,8 @@ import { Int32, read as readNbt } from "nbtify";
 import {
   buildStateAwareCatalog,
   matchCatalogBlock,
+  rotateBlockStates,
+  rotationFromBlockStates,
   statesEqual,
   textureForFace,
   variantId,
@@ -24,6 +26,7 @@ type Block = {
   minecraftStates?: Record<string, string | number | boolean>;
   stateDefinitions?: BlockStateDefinition[];
   textures?: Partial<Record<"up" | "down" | "north" | "south" | "east" | "west" | "side", string>>;
+  textureVariants?: Record<string, string>;
   legacyAlias?: boolean;
   sourceRotation?: number;
 };
@@ -439,6 +442,7 @@ export default function Home() {
         configured,
       ],
     }));
+    setSelectedRotation(rotationFromStates(minecraftStates));
     chooseBlock(id);
   }
 
@@ -775,25 +779,8 @@ export default function Home() {
       if (textureName.endsWith("_top")) states.pillar_axis = "y";
     }
     const sourceRotation = block?.sourceRotation ?? 0;
-    const steps = ((rotation - sourceRotation + 360) % 360) / 90;
-    const cardinals = ["north", "east", "south", "west"];
-    if (typeof states.cardinal_direction === "string") {
-      const start = cardinals.indexOf(states.cardinal_direction.toLowerCase());
-      if (start >= 0) states.cardinal_direction = cardinals[(start + steps) % 4];
-    }
-    if (typeof states.minecraft_cardinal_direction === "string") {
-      const start = cardinals.indexOf(states.minecraft_cardinal_direction.toLowerCase());
-      if (start >= 0) states.minecraft_cardinal_direction = cardinals[(start + steps) % 4];
-    }
-    if (typeof states.facing_direction === "number" && [2, 5, 3, 4].includes(states.facing_direction)) {
-      const facings = [2, 5, 3, 4];
-      states.facing_direction = facings[(facings.indexOf(states.facing_direction) + steps) % 4];
-    }
-    const axisKey = "pillar_axis" in states ? "pillar_axis" : "axis" in states ? "axis" : null;
-    if (axisKey && steps % 2 === 1 && (states[axisKey] === "x" || states[axisKey] === "z")) {
-      states[axisKey] = states[axisKey] === "x" ? "z" : "x";
-    }
-    return Object.fromEntries(Object.entries(states).map(([key, value]) => [key, typeof value === "number" ? new Int32(value) : value]));
+    const rotated = rotateBlockStates(states, rotation - sourceRotation);
+    return Object.fromEntries(Object.entries(rotated).map(([key, value]) => [key, typeof value === "number" ? new Int32(value) : value]));
   }
 
   async function exportMcstructure() {
@@ -836,14 +823,7 @@ export default function Home() {
   }
 
   function rotationFromStates(states: Record<string, string | number | boolean>) {
-    const cardinal = String(states.cardinal_direction ?? states.minecraft_cardinal_direction ?? "").toLowerCase();
-    const cardinalRotations: Record<string, number> = { north:0, east:90, south:180, west:270 };
-    if (cardinal in cardinalRotations) return cardinalRotations[cardinal];
-    const facing = Number(states.facing_direction);
-    if (Number.isFinite(facing)) return ({ 2:0, 5:90, 3:180, 4:270 } as Record<number, number>)[facing] ?? 0;
-    const axis = String(states.pillar_axis ?? states.axis ?? "").toLowerCase();
-    if (axis === "x") return 90;
-    return 0;
+    return rotationFromBlockStates(states);
   }
 
   function textureForStructureBlock(localName: string, states: Record<string, string | number | boolean> = {}) {

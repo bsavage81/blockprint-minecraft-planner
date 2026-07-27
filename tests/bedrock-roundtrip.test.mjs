@@ -4,6 +4,8 @@ import {
   buildStateAwareCatalog,
   catalogNameForImportedBlock,
   matchCatalogBlock,
+  rotateBlockStates,
+  rotationFromBlockStates,
   statesEqual,
   textureForFace,
   variantId,
@@ -24,6 +26,28 @@ test("builds canonical blocks while retaining legacy texture aliases", () => {
   assert.ok(legacy.legacyAlias);
   assert.equal(legacy.textureUrl, "top.png", "old project IDs retain their exact texture");
   assert.equal(variantId("minecraft:oak_log", { pillar_axis:"x" }), "minecraft:oak_log[pillar_axis=x]");
+});
+
+test("selects state-specific textures and rotates official Bedrock direction states", () => {
+  const catalog = buildStateAwareCatalog([
+    { id:"bedrock:door_lower", name:"Door Lower", category:"Utility", textureUrl:"door-lower.png" },
+    { id:"bedrock:door_upper", name:"Door Upper", category:"Utility", textureUrl:"door-upper.png" },
+    { id:"bedrock:campfire_log", name:"Campfire Log", category:"Utility", textureUrl:"campfire-off.png" },
+    { id:"bedrock:campfire_log_lit", name:"Campfire Log Lit", category:"Utility", textureUrl:"campfire-on.png" },
+  ]);
+  const door = catalog.find(entry => entry.id === "minecraft:wooden_door");
+  assert.equal(textureForFace({ ...door, minecraftStates:{ ...door.minecraftStates, upper_block_bit:false } }), "door-lower.png");
+  assert.equal(textureForFace({ ...door, minecraftStates:{ ...door.minecraftStates, upper_block_bit:true } }), "door-upper.png");
+  const campfire = catalog.find(entry => entry.id === "minecraft:campfire");
+  assert.equal(textureForFace({ ...campfire, minecraftStates:{ extinguished:false } }), "campfire-on.png");
+  assert.equal(textureForFace({ ...campfire, minecraftStates:{ extinguished:true } }), "campfire-off.png");
+
+  assert.equal(rotationFromBlockStates({ "minecraft:cardinal_direction":"east" }), 90);
+  assert.deepEqual(
+    rotateBlockStates({ "minecraft:cardinal_direction":"north", pillar_axis:"x" }, 90),
+    { "minecraft:cardinal_direction":"east", pillar_axis:"z" },
+  );
+  assert.deepEqual(rotateBlockStates({ direction:2 }, 90), { direction:3 });
 });
 
 test("matches imported palette entries to canonical catalog blocks", () => {
