@@ -7,6 +7,7 @@ import {
   buildStateAwareCatalog,
   CATALOG_CATEGORY_ORDER,
   matchCatalogBlock,
+  migrateImportedBlock,
   rotateBlockStates,
   rotationFromBlockStates,
   statesEqual,
@@ -1295,11 +1296,13 @@ export default function Home() {
     const paletteIds = palette.map((entry, paletteIndex) => {
       const fullName = String(entry.name ?? "");
       const localName = fullName.replace(/^minecraft:/, "");
-      const states = normalizeNbtStates(entry.states);
+      const importedStates = normalizeNbtStates(entry.states);
       if (["air", "cave_air", "void_air", "structure_void"].includes(localName)) return null;
+      const migrated = migrateImportedBlock(fullName, importedStates);
+      const states = migrated.states;
       const sourceRotation = rotationFromStates(states);
       paletteRotations[paletteIndex] = sourceRotation;
-      const minecraftName = fullName.startsWith("minecraft:") ? fullName : `minecraft:${localName}`;
+      const minecraftName = migrated.name;
       const catalogBlock = matchCatalogBlock(baseBlocks, minecraftName, states);
       if (catalogBlock && catalogBlock.minecraftName === minecraftName && statesEqual(catalogBlock.minecraftStates, states)) {
         return catalogBlock.id;

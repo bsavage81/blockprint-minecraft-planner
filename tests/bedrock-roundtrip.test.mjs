@@ -7,6 +7,7 @@ import {
   categoryForBlockName,
   catalogNameForImportedBlock,
   matchCatalogBlock,
+  migrateImportedBlock,
   rotateBlockStates,
   rotationFromBlockStates,
   statesEqual,
@@ -142,6 +143,26 @@ test("matches imported palette entries to canonical catalog blocks", () => {
   assert.equal(catalogNameForImportedBlock("minecraft:log", { old_log_type:"oak" }), "minecraft:oak_log");
   const legacyLog = matchCatalogBlock(catalog, "minecraft:log", { old_log_type:"oak", pillar_axis:"y" });
   assert.equal(legacyLog.id, "minecraft:oak_log");
+  assert.deepEqual(
+    migrateImportedBlock("minecraft:log2", { new_log_type:"acacia", pillar_axis:"z" }),
+    { name:"minecraft:acacia_log", states:{ pillar_axis:"z" } },
+  );
+  assert.deepEqual(
+    migrateImportedBlock("minecraft:coral", { coral_color:"pink", dead_bit:0 }),
+    { name:"minecraft:brain_coral", states:{} },
+  );
+  assert.deepEqual(
+    migrateImportedBlock("minecraft:coral_block", { coral_color:"red", dead_bit:1 }),
+    { name:"minecraft:dead_fire_coral_block", states:{} },
+  );
+  assert.deepEqual(
+    migrateImportedBlock("minecraft:stained_hardened_clay", { color:"lime" }),
+    { name:"minecraft:lime_terracotta", states:{} },
+  );
+  assert.deepEqual(
+    migrateImportedBlock("minecraft:seaLantern", {}),
+    { name:"minecraft:sea_lantern", states:{} },
+  );
   assert.equal(
     variantId("minecraft:log", { old_log_type:"oak", pillar_axis:"y" }),
     "minecraft:log[old_log_type=oak,pillar_axis=y]",

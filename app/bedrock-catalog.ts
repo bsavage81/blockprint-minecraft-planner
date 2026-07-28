@@ -384,17 +384,58 @@ export function catalogNameForImportedBlock(
   minecraftName: string,
   states: Record<string, BlockStateValue> = {},
 ) {
+  return migrateImportedBlock(minecraftName, states).name;
+}
+
+export function migrateImportedBlock(
+  minecraftName: string,
+  states: Record<string, BlockStateValue> = {},
+) {
   const localName = minecraftName.replace(/^minecraft:/, "");
+  const migratedStates = { ...states };
   const woodType = String(states.wood_type ?? states.old_log_type ?? states.new_log_type ?? "");
   const color = String(states.color ?? "");
-  if ((localName === "log" || localName === "log2") && woodType) return `minecraft:${woodType}_log`;
-  if (localName === "planks" && woodType) return `minecraft:${woodType}_planks`;
+  if ((localName === "log" || localName === "log2") && woodType) {
+    delete migratedStates.wood_type;
+    delete migratedStates.old_log_type;
+    delete migratedStates.new_log_type;
+    return { name:`minecraft:${woodType}_log`, states:migratedStates };
+  }
+  if (localName === "planks" && woodType) {
+    delete migratedStates.wood_type;
+    return { name:`minecraft:${woodType}_planks`, states:migratedStates };
+  }
   if (["wool", "carpet", "concrete", "concrete_powder", "stained_glass"].includes(localName) && color) {
-    return `minecraft:${color}_${localName}`;
+    delete migratedStates.color;
+    return { name:`minecraft:${color}_${localName}`, states:migratedStates };
+  }
+  if (localName === "stained_hardened_clay" && color) {
+    delete migratedStates.color;
+    return { name:`minecraft:${color}_terracotta`, states:migratedStates };
+  }
+  const coralType = {
+    blue:"tube",
+    pink:"brain",
+    purple:"bubble",
+    red:"fire",
+    yellow:"horn",
+  }[String(states.coral_color ?? "")];
+  if ((localName === "coral" || localName === "coral_block") && coralType) {
+    const dead = Boolean(states.dead_bit);
+    delete migratedStates.coral_color;
+    delete migratedStates.dead_bit;
+    return {
+      name:`minecraft:${dead ? "dead_" : ""}${coralType}_${localName === "coral_block" ? "coral_block" : "coral"}`,
+      states:migratedStates,
+    };
   }
   const stoneType = String(states.stone_type ?? "");
-  if (localName === "stone" && stoneType && stoneType !== "stone") return `minecraft:${stoneType}`;
-  return minecraftName.startsWith("minecraft:") ? minecraftName : `minecraft:${localName}`;
+  if (localName === "stone" && stoneType && stoneType !== "stone") {
+    delete migratedStates.stone_type;
+    return { name:`minecraft:${stoneType}`, states:migratedStates };
+  }
+  const aliases: Record<string, string> = { seaLantern:"sea_lantern" };
+  return { name:`minecraft:${aliases[localName] ?? localName}`, states:migratedStates };
 }
 
 export function matchCatalogBlock(
@@ -402,7 +443,7 @@ export function matchCatalogBlock(
   minecraftName: string,
   states: Record<string, BlockStateValue> = {},
 ) {
-  const catalogName = catalogNameForImportedBlock(minecraftName, states);
+  const catalogName = migrateImportedBlock(minecraftName, states).name;
   return catalog.find(block => !block.legacyAlias && block.minecraftName === catalogName);
 }
 
