@@ -101,7 +101,7 @@ function editableItemNbt(value: unknown, path: string[] = []): unknown {
       return typedNbtList([], TAG.STRING);
     }
     if (value.length && value.every(child => typeof child === "number")) {
-      const usesFloat = path.at(-1) === "Motion" || path.at(-1) === "power"
+      const usesFloat = ["CollisionPos", "HomePos", "Motion", "power"].includes(path.at(-1) ?? "")
         || value.some(child => !Number.isInteger(child));
       return typedNbtList(
         value.map(child => usesFloat ? new Float32(child as number) : new Int32(child as number)),
@@ -132,17 +132,28 @@ function editableItemNbt(value: unknown, path: string[] = []): unknown {
     if (path.includes("Attributes") && ["Base", "Current", "DefaultMax", "DefaultMin", "Max", "Min"].includes(key ?? "")) {
       return new Float32(value);
     }
-    if (["LeasherID", "LoveCause", "OwnerID", "OwnerNew", "TargetID"].includes(key ?? "")) return BigInt(value);
-    if (["FallDistance", "Health", "BodyRot"].includes(key ?? "")) return new Float32(value);
-    if (["Air", "AttackTime", "DeathTime", "Fire", "HurtTime"].includes(key ?? "")) return new Int16(value);
     if ([
-      "Chested", "CustomNameVisible", "Dead", "Invulnerable", "IsAngry", "IsAutonomous",
+      "AllayDuplicationCooldown", "LeasherID", "LoveCause", "OwnerID", "OwnerNew",
+      "TargetID", "TimeStamp", "UUIDLeast", "UUIDMost", "map_uuid",
+    ].includes(key ?? "")) return BigInt(value);
+    if (["Amount", "BodyRot", "FallDistance", "priceMultiplierA", "priceMultiplierB"].includes(key ?? "")) return new Float32(value);
+    if (["Age", "Air", "Anger", "AttackTime", "Cooldown", "DeathTime", "Fire", "Health", "HurtTime", "PotionId"].includes(key ?? "")) {
+      return new Int16(value);
+    }
+    if ([
+      "AllowUnderwater", "BatFlags", "Chested", "CustomNameVisible", "Dead", "Elder",
+      "HasExecuted", "Invulnerable", "IsAngry", "IsAutonomous",
       "IsBaby", "IsEating", "IsGliding", "IsGlobal", "IsIllagerCaptain", "IsOrphaned",
-      "IsOutOfControl", "IsPregnant", "IsRoaring", "IsScared", "IsStunned", "IsSwimming", "IsTamed",
+      "IsInRaid", "IsOutOfControl", "IsPregnant", "IsRoaring", "IsScared", "IsStunned", "IsSwimming", "IsTamed",
       "IsTrusting", "LootDropped", "NaturalSpawn", "OnGround", "Persistent", "Saddled",
-      "Sheared", "ShowBottom", "Sitting", "Surface", "canPickupItems", "expDropEnabled",
-      "hasBoundOrigin", "hasSetCanPickupItems",
+      "Sheared", "ShowBottom", "Sitting", "Size", "SkipBodySlotUpgrade", "SpawnedByNight",
+      "SpawnedFromVillage", "StopSpawning", "Surface", "Willing", "age_bit", "attached_bit",
+      "auxValue", "canPickupItems", "enchantFlame", "enchantInfinity", "enchantPower",
+      "enchantPunch", "expDropEnabled", "hasBoundOrigin", "hasSetCanPickupItems", "inGround",
+      "isCreative", "map_display_players", "map_regenerate", "player", "powered_bit",
+      "rewardExp", "shake", "toggle_bit",
     ].includes(key ?? "")) return new Int8(value);
+    if (path.includes("properties") && (value === 0 || value === 1)) return new Int8(value);
     if (path.includes("ench") && (key === "id" || key === "lvl")) return new Int16(value);
     return Number.isInteger(value) ? new Int32(value) : new Float32(value);
   }

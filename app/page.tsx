@@ -102,7 +102,8 @@ export default function Home() {
   const [layer, setLayer] = useState(0);
   const [selected, setSelected] = useState("oak");
   const [selectedRotation, setSelectedRotation] = useState(0);
-  const [tool, setTool] = useState<"paint" | "erase" | "select" | "line" | "fill" | "replace" | "picker" | "grab">("paint");
+  const [tool, setTool] = useState<"paint" | "erase" | "select" | "shape" | "fill" | "replace" | "picker" | "grab">("paint");
+  const [shapeType, setShapeType] = useState<"line" | "rectangle" | "ellipse">("line");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
@@ -111,7 +112,7 @@ export default function Home() {
   const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const [history, setHistory] = useState<Blueprint[]>([]);
   const [future, setFuture] = useState<Blueprint[]>([]);
-  const [linePreview, setLinePreview] = useState<number[]>([]);
+  const [shapePreview, setShapePreview] = useState<number[]>([]);
   const [canvasWidth, setCanvasWidth] = useState("30");
   const [canvasDepth, setCanvasDepth] = useState("30");
   const [exporting, setExporting] = useState<"pdf" | "png" | "mcstructure" | null>(null);
@@ -130,9 +131,9 @@ export default function Home() {
   const [movingEntity, setMovingEntity] = useState<{ layer:number; index:number } | null>(null);
   const painting = useRef(false);
   const selecting = useRef(false);
-  const lining = useRef(false);
-  const lineStart = useRef<number | null>(null);
-  const lineEnd = useRef<number | null>(null);
+  const shaping = useRef(false);
+  const shapeStart = useRef<number | null>(null);
+  const shapeEnd = useRef<number | null>(null);
   const canvasViewport = useRef<HTMLDivElement | null>(null);
   const panning = useRef({ active:false, pointerId:-1, startX:0, startY:0, scrollLeft:0, scrollTop:0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -477,9 +478,51 @@ export default function Home() {
     return result;
   }
 
-  function commitLine() {
-    if (!lining.current || lineStart.current === null || lineEnd.current === null) return;
-    const indices = lineIndices(lineStart.current, lineEnd.current);
+  function shapeIndices(start: number, end: number) {
+    if (shapeType === "line") return lineIndices(start, end);
+    const x0 = start % blueprint.width;
+    const y0 = Math.floor(start / blueprint.width);
+    const x1 = end % blueprint.width;
+    const y1 = Math.floor(end / blueprint.width);
+    const left = Math.min(x0, x1);
+    const right = Math.max(x0, x1);
+    const top = Math.min(y0, y1);
+    const bottom = Math.max(y0, y1);
+    if (shapeType === "rectangle") {
+      const result = new Set<number>();
+      for (let x = left; x <= right; x++) {
+        result.add(top * blueprint.width + x);
+        result.add(bottom * blueprint.width + x);
+      }
+      for (let y = top; y <= bottom; y++) {
+        result.add(y * blueprint.width + left);
+        result.add(y * blueprint.width + right);
+      }
+      return [...result];
+    }
+    if (left === right || top === bottom) return lineIndices(start, end);
+    const centerX = (left + right) / 2;
+    const centerY = (top + bottom) / 2;
+    const radiusX = (right - left) / 2;
+    const radiusY = (bottom - top) / 2;
+    const points: number[] = [];
+    const steps = Math.max(24, Math.ceil(Math.max(radiusX, radiusY) * 12));
+    for (let step = 0; step <= steps; step++) {
+      const angle = step / steps * Math.PI * 2;
+      const x = Math.round(centerX + Math.cos(angle) * radiusX);
+      const y = Math.round(centerY + Math.sin(angle) * radiusY);
+      points.push(y * blueprint.width + x);
+    }
+    const result = new Set<number>();
+    for (let index = 1; index < points.length; index++) {
+      lineIndices(points[index - 1], points[index]).forEach(cell => result.add(cell));
+    }
+    return [...result];
+  }
+
+  function commitShape() {
+    if (!shaping.current || shapeStart.current === null || shapeEnd.current === null) return;
+    const indices = shapeIndices(shapeStart.current, shapeEnd.current);
     checkpoint();
     setBlueprint(previous => {
       if (selectedBlock?.kind === "entity") {
@@ -500,10 +543,10 @@ export default function Home() {
       });
       return { ...previous, layers, rotations, containers, entities };
     });
-    lining.current = false;
-    lineStart.current = null;
-    lineEnd.current = null;
-    setLinePreview([]);
+    shaping.current = false;
+    shapeStart.current = null;
+    shapeEnd.current = null;
+    setShapePreview([]);
   }
 
   function fillArea(start: number) {
@@ -947,15 +990,15 @@ export default function Home() {
     setLayer(0);
     setSelection(null);
     setClipboard(null);
-    setLinePreview([]);
+    setShapePreview([]);
     setSelected(baseBlocks[0]?.id ?? "oak");
     setSelectedRotation(0);
     setTool("paint");
     painting.current = false;
     selecting.current = false;
-    lining.current = false;
-    lineStart.current = null;
-    lineEnd.current = null;
+    shaping.current = false;
+    shapeStart.current = null;
+    shapeEnd.current = null;
   }
 
   function layerMaterials(layerData: Record<string, string>) {
@@ -1533,7 +1576,13 @@ export default function Home() {
               <div className="tool-group">
                 <button className={tool === "paint" ? "active" : ""} onClick={() => setTool("paint")}>Paint</button>
                 <button className={tool === "erase" ? "active" : ""} onClick={() => setTool("erase")}>Erase</button>
-                <button className={tool === "line" ? "active" : ""} onClick={() => setTool("line")}>Line</button>
+                <button className={tool === "shape" ? "active" : ""} onClick={() => setTool("shape")}>Shape</button>
+                {tool === "shape" && <select className="shape-type" aria-label="Shape type" value={shapeType}
+                  onChange={event => setShapeType(event.target.value as typeof shapeType)}>
+                  <option value="line">Line</option>
+                  <option value="rectangle">Rectangle</option>
+                  <option value="ellipse">Ellipse</option>
+                </select>}
                 <button className={tool === "fill" ? "active" : ""} onClick={() => setTool("fill")}>Fill</button>
                 <button className={tool === "replace" ? "active" : ""} onClick={() => setTool("replace")} title="Replace every matching block on this layer">Replace</button>
                 <button className={tool === "picker" ? "active" : ""} onClick={() => setTool("picker")} title="Pick a block (Alt+click)">Picker</button>
@@ -1610,15 +1659,15 @@ export default function Home() {
               style={{ "--cell":`${zoom}px`, gridTemplateColumns:`repeat(${blueprint.width}, var(--cell))`, gridTemplateRows:`repeat(${blueprint.depth}, var(--cell))` } as CSSProperties}
               onPointerLeave={() => {
                 painting.current = false;
-                if (lining.current) {
-                  lining.current = false;
-                  lineStart.current = null;
-                  lineEnd.current = null;
-                  setLinePreview([]);
+                if (shaping.current) {
+                  shaping.current = false;
+                  shapeStart.current = null;
+                  shapeEnd.current = null;
+                  setShapePreview([]);
                 }
               }}
               onPointerUp={() => {
-                if (lining.current) commitLine();
+                if (shaping.current) commitShape();
                 painting.current = false;
                 selecting.current = false;
               }}>
@@ -1639,7 +1688,7 @@ export default function Home() {
                   : lowerLayerIndex >= 0 ? blueprint.rotations?.[lowerLayerIndex]?.[index] ?? 0 : 0;
                 return <button key={index} aria-label={`Column ${index % blueprint.width + 1}, row ${Math.floor(index / blueprint.width) + 1}${currentEntity ? `, ${currentEntity.name} entity` : currentBlock ? `, ${blockLabel(currentBlock)}` : lowerBlock ? `, ${blockLabel(lowerBlock)} from lower layer` : ", empty"}`}
                   title={currentEntity ? `${currentEntity.name} entity` : currentBlock ? blockLabel(currentBlock) : lowerBlock ? `${blockLabel(lowerBlock)} (lower layer)` : undefined}
-                  className={`cell ${currentBlock ? "filled" : ""} ${currentEntity ? "has-entity" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${linePreview.includes(index) ? "line-preview" : ""}`}
+                  className={`cell ${currentBlock ? "filled" : ""} ${currentEntity ? "has-entity" : ""} ${lowerBlock ? "ghost-block" : ""} ${selectionClass(index)} ${shapePreview.includes(index) ? "line-preview" : ""}`}
                   onPointerDown={e => {
                     if (tool === "grab") return;
                     e.preventDefault();
@@ -1671,11 +1720,11 @@ export default function Home() {
                     } else if (tool === "select") {
                       selecting.current = true;
                       setSelection({ start:index, end:index });
-                    } else if (tool === "line") {
-                      lining.current = true;
-                      lineStart.current = index;
-                      lineEnd.current = index;
-                      setLinePreview([index]);
+                    } else if (tool === "shape") {
+                      shaping.current = true;
+                      shapeStart.current = index;
+                      shapeEnd.current = index;
+                      setShapePreview([index]);
                     } else if (tool === "fill") {
                       fillArea(index);
                     } else if (tool === "replace") {
@@ -1689,9 +1738,9 @@ export default function Home() {
                   onPointerEnter={() => {
                     if (tool === "select" && selecting.current) {
                       setSelection(previous => ({ start: previous?.start ?? index, end:index }));
-                    } else if (tool === "line" && lining.current && lineStart.current !== null) {
-                      lineEnd.current = index;
-                      setLinePreview(lineIndices(lineStart.current, index));
+                    } else if (tool === "shape" && shaping.current && shapeStart.current !== null) {
+                      shapeEnd.current = index;
+                      setShapePreview(shapeIndices(shapeStart.current, index));
                     } else if (painting.current) paintCell(index);
                   }}>
                   {displayBlock && <span className="cell-surface" style={{

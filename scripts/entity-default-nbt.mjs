@@ -94,6 +94,7 @@ export function defaultNbtForEntity(identifier, mob = false, existing = {}) {
   return {
     ...BASE_ENTITY_NBT,
     ...(mob ? MOB_NBT : {}),
+    ...(mob ? mobDefaultsFromBehavior(identifier) : {}),
     ...(TYPE_DEFAULTS[identifier] ?? {}),
     ...existing,
   };

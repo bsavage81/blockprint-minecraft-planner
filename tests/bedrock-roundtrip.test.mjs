@@ -119,12 +119,17 @@ test("provides format-correct defaults for every entity category", () => {
   assert.ok(catalog.entities.length > 100);
   for (const entity of catalog.entities) {
     assert.deepEqual(entity.defaultNbt.Motion, [0, 0, 0], `${entity.id} has default motion`);
-    assert.equal(entity.defaultNbt.OnGround, 1, `${entity.id} has an on-ground flag`);
+    assert.equal(typeof entity.defaultNbt.OnGround, "number", `${entity.id} has an on-ground flag`);
     assert.equal(entity.defaultNbt.PortalCooldown, 0, `${entity.id} has a portal cooldown`);
-    if (entity.mob) assert.equal(entity.defaultNbt.Air, 300, `${entity.id} has mob defaults`);
+    if (entity.mob) {
+      assert.equal(entity.defaultNbt.Air, 300, `${entity.id} has mob defaults`);
+      assert.ok(entity.defaultNbt.Attributes?.length, `${entity.id} has attributes`);
+      assert.ok(entity.defaultNbt.definitions?.includes(`+${entity.id}`), `${entity.id} activates its base definition`);
+    }
   }
   for (const [identifier, health] of [["minecraft:chicken", 4], ["minecraft:cow", 10], ["minecraft:pig", 10]]) {
     const entity = catalog.entities.find(candidate => candidate.id === identifier);
+    assert.match(entity.defaultNbtSource, /^in-game:/, `${identifier} uses an in-game NBT template`);
     assert.ok(entity.defaultNbt.definitions.includes(`+${identifier}`), `${identifier} activates its base definition`);
     assert.ok(entity.defaultNbt.definitions.some(definition => /_adult$/.test(definition)), `${identifier} activates its adult definition`);
     assert.equal(

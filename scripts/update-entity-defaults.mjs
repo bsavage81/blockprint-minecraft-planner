@@ -1,5 +1,6 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import JSON5 from "json5";
 import { defaultNbtForEntity, ENTITY_FORMAT_REFERENCE, mobDefaultsFromBehavior } from "./entity-default-nbt.mjs";
 
 const filename = resolve("public", "bedrock-entities.json");
@@ -10,7 +11,7 @@ if (behaviorDirectory) {
   for (const relative of await readdir(behaviorDirectory, { recursive:true })) {
     if (!relative.endsWith(".json")) continue;
     try {
-      const definition = JSON.parse(await readFile(join(behaviorDirectory, relative), "utf8"));
+      const definition = JSON5.parse(await readFile(join(behaviorDirectory, relative), "utf8"));
       const identifier = definition["minecraft:entity"]?.description?.identifier;
       if (identifier) behaviorById.set(identifier, definition);
     } catch {}
