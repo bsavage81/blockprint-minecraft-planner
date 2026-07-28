@@ -26,6 +26,14 @@ export type CatalogBlock = {
 
 export type OfficialBlock = { name: string; states: string[] };
 
+export function dedupeCatalogEntries<T extends { id: string }>(...groups: T[][]) {
+  const byId = new Map<string, T>();
+  for (const group of groups) {
+    for (const entry of group) byId.set(entry.id, entry);
+  }
+  return [...byId.values()];
+}
+
 const FACE_SUFFIXES: [RegExp, keyof NonNullable<CatalogBlock["textures"]>][] = [
   [/_upper$/, "side"],
   [/_lower$/, "side"],

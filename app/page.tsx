@@ -6,6 +6,7 @@ import { Int32, read as readNbt } from "nbtify";
 import {
   buildStateAwareCatalog,
   CATALOG_CATEGORY_ORDER,
+  dedupeCatalogEntries,
   matchCatalogBlock,
   migrateImportedBlock,
   rotateBlockStates,
@@ -135,7 +136,10 @@ export default function Home() {
   const canvasViewport = useRef<HTMLDivElement | null>(null);
   const panning = useRef({ active:false, pointerId:-1, startX:0, startY:0, scrollLeft:0, scrollTop:0 });
   const [isPanning, setIsPanning] = useState(false);
-  const blocks = useMemo(() => [...baseBlocks, ...(blueprint.customBlocks ?? []), ...entityCatalog], [baseBlocks, blueprint.customBlocks, entityCatalog]);
+  const blocks = useMemo(
+    () => dedupeCatalogEntries(baseBlocks, blueprint.customBlocks ?? [], entityCatalog),
+    [baseBlocks, blueprint.customBlocks, entityCatalog],
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem("blockprint-blueprint");

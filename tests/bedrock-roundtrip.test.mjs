@@ -6,6 +6,7 @@ import {
   buildStateAwareCatalog,
   categoryForBlockName,
   catalogNameForImportedBlock,
+  dedupeCatalogEntries,
   matchCatalogBlock,
   migrateImportedBlock,
   rotateBlockStates,
@@ -51,6 +52,24 @@ test("groups blocks into practical material categories", () => {
   assert.equal(categoryForBlockName("flowering_azalea_leaves"), "Nature");
   assert.equal(categoryForBlockName("diamond_ore"), "Ores & Minerals");
   assert.equal(categoryForBlockName("redstone_repeater"), "Redstone");
+});
+
+test("deduplicates project palette entries before category filtering", () => {
+  const catalog = [
+    { id:"minecraft:bed", category:"Color", source:"catalog" },
+    { id:"minecraft:stone", category:"Stone", source:"catalog" },
+  ];
+  const project = [
+    { id:"minecraft:bed", category:"Color", source:"project" },
+    { id:"minecraft:decorated_pot", category:"Other", source:"project" },
+  ];
+  const merged = dedupeCatalogEntries(catalog, project);
+  assert.equal(merged.filter(block => block.id === "minecraft:bed").length, 1);
+  assert.equal(merged.find(block => block.id === "minecraft:bed").source, "project");
+  assert.deepEqual(
+    merged.filter(block => block.category === "Stone").map(block => block.id),
+    ["minecraft:stone"],
+  );
 });
 
 test("builds canonical blocks while retaining legacy texture aliases", () => {
