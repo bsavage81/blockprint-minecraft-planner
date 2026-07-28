@@ -3,7 +3,8 @@
   "references": [
     "https://minecraft.wiki/w/Entity",
     "https://minecraft.wiki/w/Mob",
-    "https://minecraft.wiki/w/Category:Mob_faces"
+    "https://minecraft.wiki/w/Category:Mob_faces",
+    "https://minecraft.wiki/w/Bedrock_Edition_level_format/Entity_format"
   ],
   "entities": [
     {
@@ -14,8 +15,25 @@
       "image": "./bedrock/entities/agent.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:AgentFace.png"
     },
@@ -27,8 +45,25 @@
       "image": "./bedrock/entities/allay.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Allay%20face.png"
     },
@@ -40,8 +75,25 @@
       "image": "./bedrock/entities/armadillo.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Armadillo%20face.png"
     },
@@ -53,6 +105,16 @@
       "image": "./bedrock/entities/armor_stand.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -65,6 +127,16 @@
       "image": "./bedrock/entities/arrow.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -77,8 +149,25 @@
       "image": "./bedrock/entities/axolotl.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Axolotl%20face.png"
     },
@@ -90,8 +179,25 @@
       "image": "./bedrock/entities/bat.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Bat%20face.png"
     },
@@ -103,6 +209,16 @@
       "image": "./bedrock/entities/bed.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -115,8 +231,25 @@
       "image": "./bedrock/entities/bee.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Bee%20face.png"
     },
@@ -128,8 +261,25 @@
       "image": "./bedrock/entities/blaze.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Blaze%20face.png"
     },
@@ -141,6 +291,16 @@
       "image": "./bedrock/entities/boat.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -153,8 +313,25 @@
       "image": "./bedrock/entities/bogged.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Bogged%20face.png"
     },
@@ -166,8 +343,25 @@
       "image": "./bedrock/entities/breeze.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Breeze%20face.png"
     },
@@ -179,6 +373,16 @@
       "image": "./bedrock/entities/breeze_wind_charge_projectile.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -191,8 +395,25 @@
       "image": "./bedrock/entities/camel.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Camel%20face.png"
     },
@@ -204,8 +425,25 @@
       "image": "./bedrock/entities/camel_husk.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Camel%20Husk%20face.png"
     },
@@ -217,8 +455,25 @@
       "image": "./bedrock/entities/cat.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Cat%20face.png"
     },
@@ -230,8 +485,25 @@
       "image": "./bedrock/entities/cave_spider.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Cave%20Spider%20face.png"
     },
@@ -243,6 +515,16 @@
       "image": "./bedrock/entities/chest_boat.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -255,6 +537,16 @@
       "image": "./bedrock/entities/chest_minecart.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -267,8 +559,25 @@
       "image": "./bedrock/entities/chicken.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Chicken%20face.png"
     },
@@ -280,8 +589,25 @@
       "image": "./bedrock/entities/cod.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Cod%20face.png"
     },
@@ -293,6 +619,16 @@
       "image": "./bedrock/entities/command_block_minecart.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -305,8 +641,25 @@
       "image": "./bedrock/entities/copper_golem.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Copper%20Golem%20face.png"
     },
@@ -318,8 +671,25 @@
       "image": "./bedrock/entities/cow.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Cow%20face.png"
     },
@@ -331,8 +701,25 @@
       "image": "./bedrock/entities/creaking.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:CreakingFace.png"
     },
@@ -344,8 +731,25 @@
       "image": "./bedrock/entities/creeper.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:CreeperFace.png"
     },
@@ -357,6 +761,16 @@
       "image": "./bedrock/entities/decorated_pot.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -369,8 +783,25 @@
       "image": "./bedrock/entities/dolphin.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:DolphinFace.png"
     },
@@ -382,8 +813,25 @@
       "image": "./bedrock/entities/donkey.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Donkey%20face.png"
     },
@@ -395,6 +843,16 @@
       "image": "./bedrock/entities/dragon_fireball.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -407,8 +865,25 @@
       "image": "./bedrock/entities/drowned.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Drowned%20face.png"
     },
@@ -420,6 +895,16 @@
       "image": "./bedrock/entities/egg.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -432,8 +917,25 @@
       "image": "./bedrock/entities/elder_guardian.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Elder%20Guardian%20face.png"
     },
@@ -445,8 +947,25 @@
       "image": "./bedrock/entities/enderman.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Enderman%20face.png"
     },
@@ -458,8 +977,25 @@
       "image": "./bedrock/entities/endermite.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Endermite%20face.png"
     },
@@ -471,6 +1007,16 @@
       "image": "./bedrock/entities/ender_crystal.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -483,8 +1029,25 @@
       "image": "./bedrock/entities/ender_dragon.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Ender%20Dragon%20face.png"
     },
@@ -496,6 +1059,16 @@
       "image": "./bedrock/entities/eye_of_ender_signal.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -508,6 +1081,16 @@
       "image": "./bedrock/entities/ender_pearl.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -520,6 +1103,16 @@
       "image": "./bedrock/entities/evocation_fang.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -532,8 +1125,25 @@
       "image": "./bedrock/entities/evocation_illager.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Evoker%20face.png"
     },
@@ -545,6 +1155,16 @@
       "image": "./bedrock/entities/xp_bottle.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -557,6 +1177,18 @@
       "image": "./bedrock/entities/xp_orb.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Age": 0,
+        "Value": 1,
         "CustomName": "",
         "Persistent": 1
       }
@@ -569,6 +1201,16 @@
       "image": "./bedrock/entities/fireball.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -581,6 +1223,16 @@
       "image": "./bedrock/entities/fireworks_rocket.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -593,6 +1245,16 @@
       "image": "./bedrock/entities/fishing_hook.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -605,8 +1267,25 @@
       "image": "./bedrock/entities/fox.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Fox%20face.png"
     },
@@ -618,8 +1297,25 @@
       "image": "./bedrock/entities/frog.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Frog%20face.png"
     },
@@ -631,8 +1327,25 @@
       "image": "./bedrock/entities/ghast.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Ghast%20face.png"
     },
@@ -644,8 +1357,25 @@
       "image": "./bedrock/entities/glow_squid.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Glow%20Squid%20face.png"
     },
@@ -657,8 +1387,25 @@
       "image": "./bedrock/entities/goat.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:GoatFace.png"
     },
@@ -670,8 +1417,25 @@
       "image": "./bedrock/entities/guardian.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:GuardianFace.png"
     },
@@ -683,8 +1447,25 @@
       "image": "./bedrock/entities/happy_ghast.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Happy%20Ghast%20face.png"
     },
@@ -696,8 +1477,25 @@
       "image": "./bedrock/entities/hoglin.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:HoglinFace.png"
     },
@@ -709,6 +1507,16 @@
       "image": "./bedrock/entities/hopper_minecart.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -721,8 +1529,25 @@
       "image": "./bedrock/entities/horse.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Horse%20face.png"
     },
@@ -734,8 +1559,25 @@
       "image": "./bedrock/entities/husk.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Husk%20face.png"
     },
@@ -747,8 +1589,25 @@
       "image": "./bedrock/entities/iron_golem.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Iron%20Golem%20face.png"
     },
@@ -760,6 +1619,16 @@
       "image": "./bedrock/entities/leash_knot.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -772,6 +1641,16 @@
       "image": "./bedrock/entities/lingering_potion.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -784,8 +1663,25 @@
       "image": "./bedrock/entities/llama.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Llama%20face.png"
     },
@@ -797,6 +1693,16 @@
       "image": "./bedrock/entities/llama_spit.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -809,8 +1715,25 @@
       "image": "./bedrock/entities/magma_cube.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Magma%20Cube%20face.png"
     },
@@ -822,6 +1745,16 @@
       "image": "./bedrock/entities/minecart.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -834,8 +1767,25 @@
       "image": "./bedrock/entities/mooshroom.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Mooshroom%20face.png"
     },
@@ -847,8 +1797,25 @@
       "image": "./bedrock/entities/mule.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Mule%20face.png"
     },
@@ -860,8 +1827,25 @@
       "image": "./bedrock/entities/nautilus.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:EntitySprite%20nautilus.png"
     },
@@ -873,8 +1857,25 @@
       "image": "./bedrock/entities/npc.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:NPCFace.png"
     },
@@ -886,8 +1887,25 @@
       "image": "./bedrock/entities/ocelot.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Ocelot%20face.png"
     },
@@ -899,8 +1917,25 @@
       "image": "./bedrock/entities/panda.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Panda%20face.png"
     },
@@ -912,8 +1947,25 @@
       "image": "./bedrock/entities/parched.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Parched%20face.png"
     },
@@ -925,8 +1977,25 @@
       "image": "./bedrock/entities/parrot.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Parrot%20face.png"
     },
@@ -938,8 +2007,25 @@
       "image": "./bedrock/entities/phantom.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Phantom%20face.png"
     },
@@ -951,8 +2037,25 @@
       "image": "./bedrock/entities/pig.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Pig%20face.png"
     },
@@ -964,8 +2067,25 @@
       "image": "./bedrock/entities/piglin.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Piglin%20face.png"
     },
@@ -977,8 +2097,25 @@
       "image": "./bedrock/entities/piglin_brute.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Piglin%20Brute%20face.png"
     },
@@ -990,8 +2127,25 @@
       "image": "./bedrock/entities/pillager.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Pillager%20face.png"
     },
@@ -1003,6 +2157,16 @@
       "image": "./bedrock/entities/player.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1015,8 +2179,25 @@
       "image": "./bedrock/entities/polar_bear.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Polar%20Bear%20face.png"
     },
@@ -1028,8 +2209,25 @@
       "image": "./bedrock/entities/pufferfish.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Pufferfish%20face.png"
     },
@@ -1041,8 +2239,25 @@
       "image": "./bedrock/entities/rabbit.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Rabbit%20face.png"
     },
@@ -1054,8 +2269,25 @@
       "image": "./bedrock/entities/ravager.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Ravager%20face.png"
     },
@@ -1067,8 +2299,25 @@
       "image": "./bedrock/entities/salmon.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:EntitySprite%20salmon.png"
     },
@@ -1080,8 +2329,25 @@
       "image": "./bedrock/entities/sheep.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Sheep%20face.png"
     },
@@ -1093,8 +2359,25 @@
       "image": "./bedrock/entities/shulker.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Shulker%20face.png"
     },
@@ -1106,6 +2389,16 @@
       "image": "./bedrock/entities/shulker_bullet.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1118,8 +2411,25 @@
       "image": "./bedrock/entities/silverfish.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Silverfish%20face.png"
     },
@@ -1131,8 +2441,25 @@
       "image": "./bedrock/entities/skeleton.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Skeleton%20face.png"
     },
@@ -1144,8 +2471,25 @@
       "image": "./bedrock/entities/skeleton_horse.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Skeleton%20Horse%20face.png"
     },
@@ -1157,6 +2501,16 @@
       "image": "./bedrock/entities/skull.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1169,8 +2523,25 @@
       "image": "./bedrock/entities/slime.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Slime%20face.png"
     },
@@ -1182,6 +2553,16 @@
       "image": "./bedrock/entities/small_fireball.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1194,8 +2575,25 @@
       "image": "./bedrock/entities/sniffer.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Sniffer%20face.png"
     },
@@ -1207,6 +2605,16 @@
       "image": "./bedrock/entities/snowball.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1219,8 +2627,25 @@
       "image": "./bedrock/entities/snow_golem.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Snow%20Golem%20face.png"
     },
@@ -1232,8 +2657,25 @@
       "image": "./bedrock/entities/spider.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Spider%20face.png"
     },
@@ -1245,6 +2687,16 @@
       "image": "./bedrock/entities/splash_potion.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1257,8 +2709,25 @@
       "image": "./bedrock/entities/squid.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Squid%20face.png"
     },
@@ -1270,8 +2739,25 @@
       "image": "./bedrock/entities/stray.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Stray%20face.png"
     },
@@ -1283,8 +2769,25 @@
       "image": "./bedrock/entities/strider.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Strider%20face.png"
     },
@@ -1296,8 +2799,25 @@
       "image": "./bedrock/entities/sulfur_cube.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Sulfur%20Cube%20face.png"
     },
@@ -1309,8 +2829,25 @@
       "image": "./bedrock/entities/tadpole.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Tadpole%20face.png"
     },
@@ -1322,6 +2859,16 @@
       "image": "./bedrock/entities/thrown_trident.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1334,6 +2881,16 @@
       "image": "./bedrock/entities/tnt_minecart.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1346,8 +2903,25 @@
       "image": "./bedrock/entities/trader_llama.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Trader%20Llama%20face.png"
     },
@@ -1359,6 +2933,16 @@
       "image": "./bedrock/entities/trial_spawner.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1371,6 +2955,16 @@
       "image": "./bedrock/entities/tripod_camera.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1383,8 +2977,25 @@
       "image": "./bedrock/entities/tropicalfish.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:EntitySprite%20tropical-fish.png"
     },
@@ -1396,8 +3007,25 @@
       "image": "./bedrock/entities/turtle.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Turtle%20face.png"
     },
@@ -1409,8 +3037,25 @@
       "image": "./bedrock/entities/vex.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Vex%20face.png"
     },
@@ -1422,8 +3067,25 @@
       "image": "./bedrock/entities/villager.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Villager%20face.png"
     },
@@ -1435,8 +3097,25 @@
       "image": "./bedrock/entities/villager_v2.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Villager%20face.png"
     },
@@ -1448,8 +3127,25 @@
       "image": "./bedrock/entities/vindicator.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Vindicator%20face.png"
     },
@@ -1461,8 +3157,25 @@
       "image": "./bedrock/entities/wandering_trader.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Wandering%20Trader%20face.png"
     },
@@ -1474,8 +3187,25 @@
       "image": "./bedrock/entities/warden.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Warden%20face.png"
     },
@@ -1487,6 +3217,16 @@
       "image": "./bedrock/entities/wind_charge_projectile.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1499,8 +3239,25 @@
       "image": "./bedrock/entities/witch.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Witch%20face.png"
     },
@@ -1512,8 +3269,25 @@
       "image": "./bedrock/entities/wither.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Wither%20face.png"
     },
@@ -1525,8 +3299,25 @@
       "image": "./bedrock/entities/wither_skeleton.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Wither%20Skeleton%20face.png"
     },
@@ -1538,6 +3329,16 @@
       "image": "./bedrock/entities/wither_skull.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1550,6 +3351,16 @@
       "image": "./bedrock/entities/wither_skull_dangerous.png",
       "mob": false,
       "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
         "CustomName": "",
         "Persistent": 1
       }
@@ -1562,8 +3373,25 @@
       "image": "./bedrock/entities/wolf.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Wolf%20face.png"
     },
@@ -1575,8 +3403,25 @@
       "image": "./bedrock/entities/zoglin.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:ZoglinFace.png"
     },
@@ -1588,8 +3433,25 @@
       "image": "./bedrock/entities/zombie.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Zombie%20face.png"
     },
@@ -1601,8 +3463,25 @@
       "image": "./bedrock/entities/zombie_horse.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Zombie%20Horse%20face.png"
     },
@@ -1614,8 +3493,25 @@
       "image": "./bedrock/entities/zombie_nautilus.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:EntitySprite%20zombie-nautilus.png"
     },
@@ -1627,8 +3523,25 @@
       "image": "./bedrock/entities/zombie_pigman.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Zombified%20Piglin%20face.png"
     },
@@ -1640,8 +3553,25 @@
       "image": "./bedrock/entities/zombie_villager.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Zombie%20Villager%20face.png"
     },
@@ -1653,8 +3583,25 @@
       "image": "./bedrock/entities/zombie_villager_v2.png",
       "mob": true,
       "defaultNbt": {
-        "CustomName": "",
-        "Persistent": 1
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Air": 300,
+        "AttackTime": 0,
+        "Dead": 0,
+        "DeathTime": 0,
+        "HurtTime": 0,
+        "LeasherID": -1,
+        "NaturalSpawn": 0,
+        "Persistent": 1,
+        "CustomName": ""
       },
       "imageSource": "https://minecraft.wiki/w/File:Zombie%20Villager%20face.png"
     },
@@ -1665,7 +3612,25 @@
       "kind": "entity",
       "image": "./bedrock/entities/item.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Age": 0,
+        "Health": 5,
+        "Item": {
+          "Name": "minecraft:stone",
+          "Count": 1,
+          "Damage": 0
+        }
+      }
     },
     {
       "id": "minecraft:item_frame",
@@ -1674,7 +3639,18 @@
       "kind": "entity",
       "image": "./bedrock/entities/item_frame.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0
+      }
     },
     {
       "id": "minecraft:glow_item_frame",
@@ -1683,7 +3659,18 @@
       "kind": "entity",
       "image": "./bedrock/entities/glow_item_frame.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0
+      }
     },
     {
       "id": "minecraft:painting",
@@ -1692,7 +3679,21 @@
       "kind": "entity",
       "image": "./bedrock/entities/painting.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Dir": 0,
+        "Direction": 0,
+        "Motive": "Kebab"
+      }
     },
     {
       "id": "minecraft:falling_block",
@@ -1701,7 +3702,24 @@
       "kind": "entity",
       "image": "./bedrock/entities/falling_block.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "FallingBlock": {
+          "name": "minecraft:sand",
+          "states": {},
+          "version": 18168865
+        },
+        "Time": 1
+      }
     },
     {
       "id": "minecraft:primed_tnt",
@@ -1710,7 +3728,19 @@
       "kind": "entity",
       "image": "./bedrock/entities/primed_tnt.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0,
+        "Fuse": 80
+      }
     },
     {
       "id": "minecraft:lightning_bolt",
@@ -1719,7 +3749,18 @@
       "kind": "entity",
       "image": "./bedrock/entities/lightning_bolt.png",
       "mob": false,
-      "defaultNbt": {}
+      "defaultNbt": {
+        "FallDistance": 0,
+        "Fire": 0,
+        "Invulnerable": 0,
+        "Motion": [
+          0,
+          0,
+          0
+        ],
+        "OnGround": 1,
+        "PortalCooldown": 0
+      }
     }
   ]
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { Float32, Int16, Int32, read as readNbt, write as writeNbt } from "nbtify";
+import { Float32, Int8, Int16, Int32, read as readNbt, write as writeNbt } from "nbtify";
 import {
   buildStateAwareCatalog,
   categoryForBlockName,
@@ -14,6 +14,7 @@ import {
   variantId,
 } from "../app/bedrock-catalog.ts";
 import { decodeMcstructure, encodeMcstructure } from "../app/mcstructure-codec.ts";
+import { defaultNbtForEntity } from "../scripts/entity-default-nbt.mjs";
 
 test("contains every official Bedrock identifier, including white concrete", () => {
   const textures = JSON.parse(readFileSync(new URL("../public/bedrock-blocks.json", import.meta.url), "utf8"));
@@ -77,6 +78,31 @@ test("gives slabs editable bottom and top vertical-half states", () => {
   assert.deepEqual(slab.stateDefinitions, [
     { name:"minecraft:vertical_half", values:["bottom", "top"] },
   ]);
+});
+
+test("provides format-correct defaults for every entity category", () => {
+  const base = defaultNbtForEntity("minecraft:painting");
+  assert.deepEqual(base.Motion, [0, 0, 0]);
+  assert.equal(base.OnGround, 1);
+  assert.equal(base.Motive, "Kebab");
+
+  const mob = defaultNbtForEntity("minecraft:pig", true);
+  assert.equal(mob.Air, 300);
+  assert.equal(mob.LeasherID, -1);
+  assert.equal(mob.Persistent, 1);
+
+  const item = defaultNbtForEntity("minecraft:item");
+  assert.deepEqual(item.Item, { Name:"minecraft:stone", Count:1, Damage:0 });
+  assert.equal(item.Health, 5);
+
+  const catalog = JSON.parse(readFileSync(new URL("../public/bedrock-entities.json", import.meta.url), "utf8"));
+  assert.ok(catalog.entities.length > 100);
+  for (const entity of catalog.entities) {
+    assert.deepEqual(entity.defaultNbt.Motion, [0, 0, 0], `${entity.id} has default motion`);
+    assert.equal(entity.defaultNbt.OnGround, 1, `${entity.id} has an on-ground flag`);
+    assert.equal(entity.defaultNbt.PortalCooldown, 0, `${entity.id} has a portal cooldown`);
+    if (entity.mob) assert.equal(entity.defaultNbt.Air, 300, `${entity.id} has mob defaults`);
+  }
 });
 
 test("selects state-specific textures and rotates official Bedrock direction states", () => {
@@ -172,6 +198,11 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
         nbt:{
           CustomName:"Blueprint Pig",
           Persistent:1,
+          Air:300,
+          FallDistance:0,
+          Fire:0,
+          LeasherID:-1,
+          OnGround:1,
           Motion:[0.25, 0, -0.5],
           Flags:[true, false],
           Scores:[7, 11],
@@ -207,6 +238,13 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   const droppedItem = parsed.data.structure.entities[1].Item;
   assert.ok(droppedItem.tag.ench[0].id instanceof Int16, "dropped-item enchantment ids export as Bedrock shorts");
   assert.ok(droppedItem.tag.ench[0].lvl instanceof Int16, "dropped-item enchantment levels export as Bedrock shorts");
+  const exportedEntity = parsed.data.structure.entities[0];
+  assert.ok(exportedEntity.Air instanceof Int16, "mob air exports as a Bedrock short");
+  assert.ok(exportedEntity.Fire instanceof Int16, "entity fire ticks export as a Bedrock short");
+  assert.ok(exportedEntity.FallDistance instanceof Float32, "fall distance exports as a Bedrock float");
+  assert.ok(exportedEntity.OnGround instanceof Int8, "entity flags export as Bedrock bytes");
+  assert.equal(typeof exportedEntity.LeasherID, "bigint", "entity IDs export as Bedrock longs");
+  assert.ok(exportedEntity.Motion.every(value => value instanceof Float32), "motion exports as a float list");
   const origin = [-427, 64, 307];
   parsed.data.structure_world_origin.forEach((_, index) => { parsed.data.structure_world_origin[index] = new Int32(origin[index]); });
   parsed.data.structure.entities.forEach(rawEntity => {

@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import sharp from "sharp";
+import { defaultNbtForEntity, ENTITY_FORMAT_REFERENCE } from "./entity-default-nbt.mjs";
 
 const resourcePack = process.argv[2];
 if (!resourcePack) throw new Error("Pass the Bedrock resource_pack directory.");
@@ -73,7 +74,7 @@ for (const filename of await readdir(sourceDirectory)) {
     kind:"entity",
     image,
     mob:Boolean(description.spawn_egg) || mobExceptions.has(identifier),
-    defaultNbt:{ CustomName:"", Persistent:1 },
+    defaultNbt:defaultNbtForEntity(identifier, Boolean(description.spawn_egg) || mobExceptions.has(identifier)),
   });
 }
 
@@ -94,11 +95,11 @@ for (const [id, name, texture] of manualEntities) {
     await copyFile(join(resourcePack, texture), join(outputDirectory, outputName));
     image = `./bedrock/entities/${outputName}`;
   } catch {}
-  entities.set(id, { id, name, category:"Entities", kind:"entity", image, mob:false, defaultNbt:{} });
+  entities.set(id, { id, name, category:"Entities", kind:"entity", image, mob:false, defaultNbt:defaultNbtForEntity(id) });
 }
 
 await writeFile(
   resolve("public", "bedrock-entities.json"),
-  `${JSON.stringify({ generatedFrom:sourceDirectory, references:["https://minecraft.wiki/w/Entity", "https://minecraft.wiki/w/Mob"], entities:[...entities.values()] }, null, 2)}\n`,
+  `${JSON.stringify({ generatedFrom:sourceDirectory, references:["https://minecraft.wiki/w/Entity", "https://minecraft.wiki/w/Mob", ENTITY_FORMAT_REFERENCE], entities:[...entities.values()] }, null, 2)}\n`,
 );
 console.log(`Generated ${entities.size} Bedrock entities (${[...entities.values()].filter(entity => entity.mob).length} mobs).`);

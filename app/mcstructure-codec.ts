@@ -98,7 +98,8 @@ function editableNbt(value: unknown): unknown {
 function editableItemNbt(value: unknown, path: string[] = []): unknown {
   if (Array.isArray(value)) {
     if (value.length && value.every(child => typeof child === "number")) {
-      const usesFloat = value.some(child => !Number.isInteger(child));
+      const usesFloat = path.at(-1) === "Motion" || path.at(-1) === "power"
+        || value.some(child => !Number.isInteger(child));
       return typedNbtList(
         value.map(child => usesFloat ? new Float32(child as number) : new Int32(child as number)),
         usesFloat ? TAG.FLOAT : TAG.INT,
@@ -122,6 +123,16 @@ function editableItemNbt(value: unknown, path: string[] = []): unknown {
   }
   if (typeof value === "number") {
     const key = path.at(-1);
+    if (["LeasherID", "OwnerID", "OwnerNew"].includes(key ?? "")) return BigInt(value);
+    if (["FallDistance", "Health", "BodyRot"].includes(key ?? "")) return new Float32(value);
+    if (["Air", "AttackTime", "DeathTime", "Fire", "HurtTime"].includes(key ?? "")) return new Int16(value);
+    if ([
+      "Chested", "CustomNameVisible", "Dead", "Invulnerable", "IsAngry", "IsAutonomous",
+      "IsBaby", "IsEating", "IsGliding", "IsGlobal", "IsIllagerCaptain", "IsOrphaned",
+      "IsOutOfControl", "IsRoaring", "IsScared", "IsStunned", "IsSwimming", "IsTamed",
+      "IsTrusting", "LootDropped", "NaturalSpawn", "OnGround", "Persistent", "Saddled",
+      "Sheared", "ShowBottom", "Sitting",
+    ].includes(key ?? "")) return new Int8(value);
     if (path.includes("ench") && (key === "id" || key === "lvl")) return new Int16(value);
     return Number.isInteger(value) ? new Int32(value) : new Float32(value);
   }
