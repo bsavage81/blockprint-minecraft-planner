@@ -1,14 +1,26 @@
 import { copyFile, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import sharp from "sharp";
-import { defaultNbtForEntity, ENTITY_FORMAT_REFERENCE } from "./entity-default-nbt.mjs";
+import { defaultNbtForEntity, ENTITY_FORMAT_REFERENCE, mobDefaultsFromBehavior } from "./entity-default-nbt.mjs";
 
 const resourcePack = process.argv[2];
 if (!resourcePack) throw new Error("Pass the Bedrock resource_pack directory.");
 
 const sourceDirectory = join(resourcePack, "entity");
+const behaviorDirectory = resolve(resourcePack, "..", "behavior_pack", "entities");
 const outputDirectory = resolve("public", "bedrock", "entities");
 await mkdir(outputDirectory, { recursive:true });
+const behaviorById = new Map();
+try {
+  for (const relative of await readdir(behaviorDirectory, { recursive:true })) {
+    if (!relative.endsWith(".json")) continue;
+    try {
+      const definition = JSON.parse(await readFile(join(behaviorDirectory, relative), "utf8"));
+      const identifier = definition["minecraft:entity"]?.description?.identifier;
+      if (identifier) behaviorById.set(identifier, definition);
+    } catch {}
+  }
+} catch {}
 
 const mobExceptions = new Set([
   "minecraft:ender_dragon", "minecraft:iron_golem", "minecraft:snow_golem",
@@ -67,14 +79,19 @@ for (const filename of await readdir(sourceDirectory)) {
       } catch {}
     }
   }
+  const mob = Boolean(description.spawn_egg) || mobExceptions.has(identifier);
   entities.set(identifier, {
     id:identifier,
     name:localName.split("_").map(word => word[0]?.toUpperCase() + word.slice(1)).join(" "),
     category:"Entities",
     kind:"entity",
     image,
-    mob:Boolean(description.spawn_egg) || mobExceptions.has(identifier),
-    defaultNbt:defaultNbtForEntity(identifier, Boolean(description.spawn_egg) || mobExceptions.has(identifier)),
+    mob,
+    defaultNbt:defaultNbtForEntity(
+      identifier,
+      mob,
+      mob && behaviorById.has(identifier) ? mobDefaultsFromBehavior(identifier, behaviorById.get(identifier)) : {},
+    ),
   });
 }
 

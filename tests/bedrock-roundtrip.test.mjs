@@ -123,6 +123,21 @@ test("provides format-correct defaults for every entity category", () => {
     assert.equal(entity.defaultNbt.PortalCooldown, 0, `${entity.id} has a portal cooldown`);
     if (entity.mob) assert.equal(entity.defaultNbt.Air, 300, `${entity.id} has mob defaults`);
   }
+  for (const [identifier, health] of [["minecraft:chicken", 4], ["minecraft:cow", 10], ["minecraft:pig", 10]]) {
+    const entity = catalog.entities.find(candidate => candidate.id === identifier);
+    assert.ok(entity.defaultNbt.definitions.includes(`+${identifier}`), `${identifier} activates its base definition`);
+    assert.ok(entity.defaultNbt.definitions.some(definition => /_adult$/.test(definition)), `${identifier} activates its adult definition`);
+    assert.equal(
+      entity.defaultNbt.Attributes.find(attribute => attribute.Name === "minecraft:health").Base,
+      health,
+      `${identifier} uses its behavior-pack health`,
+    );
+    assert.equal(entity.defaultNbt.Armor.length, 5, `${identifier} has Bedrock equipment slots`);
+  }
+  assert.ok(
+    catalog.entities.find(entity => entity.id === "minecraft:pig").defaultNbt.definitions.includes("+minecraft:pig_unsaddled"),
+    "pigs activate the unsaddled component group",
+  );
 });
 
 test("selects state-specific textures and rotates official Bedrock direction states", () => {
@@ -243,6 +258,18 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
           Fire:0,
           LeasherID:-1,
           OnGround:1,
+          Armor:[{ Count:0, Damage:0, Name:"", WasPickedUp:0 }],
+          Attributes:[{
+            Base:4,
+            Current:4,
+            DefaultMax:4,
+            DefaultMin:0,
+            Max:4,
+            Min:0,
+            Name:"minecraft:health",
+          }],
+          definitions:["+my_pack:helper", "+my_pack:helper_adult"],
+          Tags:[],
           Motion:[0.25, 0, -0.5],
           Flags:[true, false],
           Scores:[7, 11],
@@ -285,6 +312,9 @@ test("round-trips Bedrock identifiers, states, coordinates, and empty cells", as
   assert.ok(exportedEntity.OnGround instanceof Int8, "entity flags export as Bedrock bytes");
   assert.equal(typeof exportedEntity.LeasherID, "bigint", "entity IDs export as Bedrock longs");
   assert.ok(exportedEntity.Motion.every(value => value instanceof Float32), "motion exports as a float list");
+  assert.ok(exportedEntity.Attributes[0].Base instanceof Float32, "mob attributes export as Bedrock floats");
+  assert.ok(exportedEntity.Armor[0].Count instanceof Int8, "equipment counts export as Bedrock bytes");
+  assert.ok(exportedEntity.Armor[0].Damage instanceof Int16, "equipment damage exports as Bedrock shorts");
   const origin = [-427, 64, 307];
   parsed.data.structure_world_origin.forEach((_, index) => { parsed.data.structure_world_origin[index] = new Int32(origin[index]); });
   parsed.data.structure.entities.forEach(rawEntity => {
