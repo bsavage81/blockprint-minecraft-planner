@@ -103,7 +103,7 @@ export default function Home() {
   const [selected, setSelected] = useState("oak");
   const [selectedRotation, setSelectedRotation] = useState(0);
   const [tool, setTool] = useState<"paint" | "erase" | "select" | "shape" | "fill" | "replace" | "picker" | "grab">("paint");
-  const [shapeType, setShapeType] = useState<"line" | "rectangle" | "ellipse">("line");
+  const [shapeType, setShapeType] = useState<"line" | "rectangle" | "filled-rectangle" | "ellipse" | "filled-ellipse">("line");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showGrid, setShowGrid] = useState(true);
@@ -488,8 +488,14 @@ export default function Home() {
     const right = Math.max(x0, x1);
     const top = Math.min(y0, y1);
     const bottom = Math.max(y0, y1);
-    if (shapeType === "rectangle") {
+    if (shapeType === "rectangle" || shapeType === "filled-rectangle") {
       const result = new Set<number>();
+      if (shapeType === "filled-rectangle") {
+        for (let y = top; y <= bottom; y++) {
+          for (let x = left; x <= right; x++) result.add(y * blueprint.width + x);
+        }
+        return [...result];
+      }
       for (let x = left; x <= right; x++) {
         result.add(top * blueprint.width + x);
         result.add(bottom * blueprint.width + x);
@@ -505,17 +511,28 @@ export default function Home() {
     const centerY = (top + bottom) / 2;
     const radiusX = (right - left) / 2;
     const radiusY = (bottom - top) / 2;
-    const points: number[] = [];
+    if (shapeType === "filled-ellipse") {
+      const result: number[] = [];
+      const fillRadiusX = (right - left + 1) / 2;
+      const fillRadiusY = (bottom - top + 1) / 2;
+      for (let y = top; y <= bottom; y++) {
+        for (let x = left; x <= right; x++) {
+          const normalizedX = (x - centerX) / fillRadiusX;
+          const normalizedY = (y - centerY) / fillRadiusY;
+          if (normalizedX ** 2 + normalizedY ** 2 <= 1) {
+            result.push(y * blueprint.width + x);
+          }
+        }
+      }
+      return result;
+    }
+    const result = new Set<number>();
     const steps = Math.max(24, Math.ceil(Math.max(radiusX, radiusY) * 12));
     for (let step = 0; step <= steps; step++) {
       const angle = step / steps * Math.PI * 2;
       const x = Math.round(centerX + Math.cos(angle) * radiusX);
       const y = Math.round(centerY + Math.sin(angle) * radiusY);
-      points.push(y * blueprint.width + x);
-    }
-    const result = new Set<number>();
-    for (let index = 1; index < points.length; index++) {
-      lineIndices(points[index - 1], points[index]).forEach(cell => result.add(cell));
+      result.add(y * blueprint.width + x);
     }
     return [...result];
   }
@@ -1581,7 +1598,9 @@ export default function Home() {
                   onChange={event => setShapeType(event.target.value as typeof shapeType)}>
                   <option value="line">Line</option>
                   <option value="rectangle">Rectangle</option>
+                  <option value="filled-rectangle">Filled rectangle</option>
                   <option value="ellipse">Ellipse</option>
+                  <option value="filled-ellipse">Filled ellipse</option>
                 </select>}
                 <button className={tool === "fill" ? "active" : ""} onClick={() => setTool("fill")}>Fill</button>
                 <button className={tool === "replace" ? "active" : ""} onClick={() => setTool("replace")} title="Replace every matching block on this layer">Replace</button>
