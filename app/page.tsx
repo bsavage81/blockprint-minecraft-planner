@@ -129,6 +129,13 @@ export default function Home() {
   const [entityPrompt, setEntityPrompt] = useState<number | null>(null);
   const [openEntity, setOpenEntity] = useState<number | null>(null);
   const [movingEntity, setMovingEntity] = useState<{ layer:number; index:number } | null>(null);
+  const [showCustomBlock, setShowCustomBlock] = useState(false);
+  const [customBlockName, setCustomBlockName] = useState("");
+  const [customBlockIdentifier, setCustomBlockIdentifier] = useState("custom:");
+  const [customBlockCategory, setCustomBlockCategory] = useState("Custom");
+  const [customBlockColor, setCustomBlockColor] = useState("#6d756c");
+  const [customBlockImage, setCustomBlockImage] = useState("");
+  const [customBlockError, setCustomBlockError] = useState("");
   const painting = useRef(false);
   const selecting = useRef(false);
   const shaping = useRef(false);
@@ -204,6 +211,7 @@ export default function Home() {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
+        setShowCustomBlock(false);
         setMovingEntity(null);
         setEntityPrompt(null);
         setSelection(null);
@@ -829,6 +837,73 @@ export default function Home() {
         [key, entity.identifier === selectedBlock.id ? { ...entity, image } : entity]
       )),
     }));
+  }
+
+  async function chooseCustomBlockImage(file?: File) {
+    if (!file) return;
+    if (!/^image\/(?:png|jpeg|webp|gif)$/.test(file.type)) {
+      setCustomBlockError("Choose a PNG, JPEG, WebP, or GIF image.");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      setCustomBlockError("Choose an image smaller than 1 MB so the project can auto-save.");
+      return;
+    }
+    const image = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+    setCustomBlockImage(image);
+    setCustomBlockError("");
+  }
+
+  function addCustomBlock() {
+    const minecraftName = customBlockIdentifier.trim().toLowerCase();
+    const name = customBlockName.trim();
+    const categoryName = customBlockCategory.trim() || "Custom";
+    if (!name) {
+      setCustomBlockError("Enter a display name.");
+      return;
+    }
+    if (!/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(minecraftName)) {
+      setCustomBlockError("Use a namespaced identifier such as custom:marble_block.");
+      return;
+    }
+    if (blocks.some(block => block.minecraftName === minecraftName)) {
+      setCustomBlockError("That block identifier is already in this palette.");
+      return;
+    }
+    const id = variantId(minecraftName, {});
+    const block: Block = {
+      id,
+      name,
+      category:categoryName,
+      color:customBlockColor,
+      textureUrl:customBlockImage || placeholderImage(minecraftName, "block"),
+      minecraftName,
+      minecraftStates:{},
+      legacyAlias:false,
+      customAsset:true,
+    };
+    checkpoint();
+    setBlueprint(previous => ({
+      ...previous,
+      customBlocks:[...(previous.customBlocks ?? []), block],
+    }));
+    setSelected(id);
+    setSelectedRotation(0);
+    setTool("paint");
+    setCategory(categoryName);
+    setSearch("");
+    setShowCustomBlock(false);
+    setCustomBlockName("");
+    setCustomBlockIdentifier("custom:");
+    setCustomBlockCategory("Custom");
+    setCustomBlockColor("#6d756c");
+    setCustomBlockImage("");
+    setCustomBlockError("");
   }
 
   function setSelectedBlockState(stateName: string, value: string | number | boolean) {
@@ -1536,6 +1611,10 @@ export default function Home() {
         <aside className={`palette-panel ${paletteCollapsed ? "collapsed" : ""}`}>
           <button className="sidebar-toggle palette-toggle" onClick={() => setPaletteCollapsed(value => !value)} aria-label={paletteCollapsed ? "Expand block palette" : "Minimize block palette"} title={paletteCollapsed ? "Expand block palette" : "Minimize block palette"}>{paletteCollapsed ? "›" : "‹"}</button>
           <div className="panel-heading"><div><span className="eyebrow">Bedrock catalog</span><h2>Block palette</h2></div><span className="count">{blocks.filter(block => !block.legacyAlias).length}</span></div>
+          <button className="button add-custom-block" onClick={() => {
+            setCustomBlockError("");
+            setShowCustomBlock(true);
+          }}>+ Add custom block</button>
           {selectedBlock?.kind === "entity" ? <section className="palette-block-state">
             <span className="eyebrow">{selectedBlock.mob ? "Bedrock mob entity" : "Bedrock entity"}</span><h2>{selectedBlock.name}</h2>
             <code className="block-identifier">{selectedBlock.id}</code>
@@ -1849,6 +1928,36 @@ export default function Home() {
           </section>
         </aside>
       </section>
+      {showCustomBlock && <div className="modal-backdrop" role="presentation" onPointerDown={() => setShowCustomBlock(false)}>
+        <section className="container-choice custom-block-dialog" role="dialog" aria-modal="true" aria-labelledby="custom-block-title" onPointerDown={event => event.stopPropagation()}>
+          <span className="eyebrow">Session palette</span>
+          <h2 id="custom-block-title">Add custom block</h2>
+          <p>Add a namespaced Bedrock block to this project. Its image and identifier will be preserved in Blockprint and exported to .mcstructure.</p>
+          <label className="field"><span>Display name</span>
+            <input autoFocus value={customBlockName} placeholder="Marble Block" onChange={event => setCustomBlockName(event.target.value)} />
+          </label>
+          <label className="field"><span>Block identifier</span>
+            <input value={customBlockIdentifier} placeholder="custom:marble_block" onChange={event => setCustomBlockIdentifier(event.target.value)} />
+            <small>Include the namespace used by the behavior pack.</small>
+          </label>
+          <label className="field"><span>Category</span>
+            <input value={customBlockCategory} placeholder="Custom" onChange={event => setCustomBlockCategory(event.target.value)} />
+          </label>
+          <label className="field"><span>Fallback color</span>
+            <input type="color" value={customBlockColor} onChange={event => setCustomBlockColor(event.target.value)} />
+          </label>
+          <label className="field"><span>Block image (optional)</span>
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={event => { chooseCustomBlockImage(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+          </label>
+          {customBlockImage && <span className="custom-block-preview" style={{ backgroundColor:customBlockColor, backgroundImage:`url(${customBlockImage})` }} />}
+          {customBlockError && <p className="field-error">{customBlockError}</p>}
+          <div className="modal-actions">
+            <button className="button secondary" onClick={() => setShowCustomBlock(false)}>Cancel</button>
+            <button className="button primary" onClick={addCustomBlock}>Add block</button>
+          </div>
+        </section>
+      </div>}
       {containerPrompt !== null && <div className="modal-backdrop" role="presentation" onPointerDown={() => setContainerPrompt(null)}>
         <section className="container-choice" role="dialog" aria-modal="true" aria-labelledby="container-choice-title" onPointerDown={event => event.stopPropagation()}>
           <span className="eyebrow">Container block</span>
